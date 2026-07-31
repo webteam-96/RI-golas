@@ -73,8 +73,8 @@ export default function GoalMatrix({
           <table className="w-full text-[13px] border-separate border-spacing-0">
             <thead>
               <tr>
-                <th className="eyebrow text-slate-400 text-left py-3 pl-5 pr-4 sticky left-0 z-10 bg-white
-                               border-b-2 border-slate-200 min-w-[230px] shadow-[2px_0_4px_-2px_rgba(10,26,51,0.10)]">
+                <th className="eyebrow text-slate-400 text-left py-3 pl-5 pr-4 sticky left-0 z-30 bg-white
+                               border-b-2 border-slate-200 min-w-[230px] shadow-[3px_0_6px_-3px_rgba(10,26,51,0.16)]">
                   {entityHeading}
                 </th>
                 {entities.map((e) => (
@@ -96,12 +96,15 @@ export default function GoalMatrix({
             <tbody>
               {rows.map((f, i) => {
                 const tot = totals(f)
-                const zebra = i % 2 ? 'bg-slate-50/50' : 'bg-white'
+                // Opaque, not a tint. A sticky cell with a translucent background lets the
+                // columns scrolling underneath show through, which reads as the field name
+                // vanishing the moment you scroll sideways.
+                const zebra = i % 2 ? 'bg-[#F8FAFC]' : 'bg-white'
                 return (
                   <tr key={f.id} className="group">
-                    <td className={`py-3 pl-5 pr-4 text-slate-700 sticky left-0 z-10 border-b border-slate-100
-                                    ${zebra} group-hover:bg-royal/[0.04]
-                                    shadow-[2px_0_4px_-2px_rgba(10,26,51,0.10)]`}>
+                    <td className={`py-3 pl-5 pr-4 text-slate-700 sticky left-0 z-20 border-b border-slate-100
+                                    ${zebra} group-hover:bg-[#EAF0FA]
+                                    shadow-[3px_0_6px_-3px_rgba(10,26,51,0.16)]`}>
                       {f.label}
                       {f.muted && <span className="ml-2 text-[10px] text-slate-300">{f.muted}</span>}
                     </td>
@@ -135,7 +138,7 @@ export default function GoalMatrix({
 function Cell({ achieved, target, unit, format, zebra, lowerIsBetter }) {
   const pct = achieved != null && target ? (achieved / target) * 100 : null
   return (
-    <td className={`py-3 px-3 text-right border-b border-slate-100 whitespace-nowrap ${zebra} group-hover:bg-royal/[0.04]`}>
+    <td className={`py-3 px-3 text-right border-b border-slate-100 whitespace-nowrap ${zebra} group-hover:bg-[#EAF0FA]`}>
       {achieved == null ? (
         <span className="text-slate-300">—</span>
       ) : (

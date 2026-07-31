@@ -24,7 +24,9 @@ export default function FoundationGrid() {
           <table className="w-full text-xs min-w-[1000px]">
             <thead>
               <tr className="border-b-2 border-slate-200 bg-slate-50">
-                <th className="text-left font-bold py-3 pl-5 pr-3 text-[10px] uppercase tracking-widest text-slate-400 sticky left-0 bg-slate-50 min-w-[280px]">
+                <th className="text-left font-bold py-3 pl-5 pr-3 text-[10px] uppercase tracking-widest text-slate-400
+                               sticky left-0 z-30 bg-slate-50 min-w-[280px]
+                               shadow-[3px_0_6px_-3px_rgba(10,26,51,0.16)]">
                   Metric
                 </th>
                 <th className="text-center font-bold py-3 px-2 text-[10px] uppercase tracking-widest text-slate-400 w-14">
@@ -51,8 +53,10 @@ export default function FoundationGrid() {
               {FOUNDATION.map((m) => {
                 const zoneVal = actualFor(m.id, 'zone', ZONE.id)
                 return (
-                  <tr key={m.id} className="hover:bg-slate-50/70">
-                    <td className="py-2 pl-5 pr-3 text-slate-700 sticky left-0 bg-white hover:bg-slate-50/70">
+                  <tr key={m.id} className="group hover:bg-[#EAF0FA]">
+                    {/* Opaque: a translucent sticky cell lets the scrolling columns show through it */}
+                    <td className="py-2 pl-5 pr-3 text-slate-700 sticky left-0 z-20 bg-white group-hover:bg-[#EAF0FA]
+                                   shadow-[3px_0_6px_-3px_rgba(10,26,51,0.16)]">
                       {m.label}
                     </td>
                     <td className="py-2 px-2 text-center text-slate-300 font-mono text-[10px]">{m.code}</td>
