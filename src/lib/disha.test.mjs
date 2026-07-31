@@ -8,6 +8,8 @@ import { completion, coverage, sections, dishaNumber, totalFor, TARGET_FIELDS } 
 import { targetValue, DEMO_TARGETS } from '../data/dishaTargets.js'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '../data/reportFields.js'
 import { ZONE } from '../data/zone6.js'
+import { CLUB_FIELDS, clubFieldsIn, clubCategories, clubAchieved, clubTarget } from '../data/clubFigures.js'
+import { CLUBS } from '../data/clubs.js'
 
 let n = 0
 const check = (name, fn) => { fn(); n++; console.log('  ok  ' + name) }
@@ -219,6 +221,45 @@ check('no target exists where there is nothing to measure', () => {
         assert.equal(targetValue(d.id, f.id), null,
           `${d.number} / ${f.id} has a target with no achieved figure behind it`)
   assert.ok(Object.keys(DEMO_TARGETS).length > 0)
+})
+
+console.log('\nclub level')
+
+// Most of the monthly report is district-level. Asking one club how many clubs it has would
+// put a dash on every club row, so those fields are left off club screens entirely.
+check('clubs answer only the fields a club can answer', () => {
+  const ids = CLUB_FIELDS.map((f) => f.id)
+  assert.ok(ids.includes('membersStart') && ids.includes('serviceProjects'))
+  for (const id of ['clubsStart', 'clubsChartered', 'clubsClosed', 'aks', 'csr', 'newClubsDev'])
+    assert.ok(!ids.includes(id), `${id} is district-level and must not appear on a club`)
+  assert.ok(CLUB_FIELDS.length < REPORT_FIELDS.length)
+})
+
+check('every club category has at least one field, and empty ones are dropped', () => {
+  const cats = clubCategories(REPORT_CATEGORIES)
+  assert.ok(cats.length > 0)
+  for (const c of cats) assert.ok(clubFieldsIn(c.id).length > 0, `${c.label} is empty`)
+  const dropped = REPORT_CATEGORIES.filter((c) => !cats.some((x) => x.id === c.id))
+  for (const c of dropped) assert.equal(clubFieldsIn(c.id).length, 0)
+})
+
+check('club figures read the club record, and every one has a target', () => {
+  const c = CLUBS.find((x) => x.id === '15766')          // Thane, from district3192
+  const members = CLUB_FIELDS.find((f) => f.id === 'membersStart')
+  assert.equal(clubAchieved(members, c), c.membership.current)
+
+  let paired = 0
+  for (const club of CLUBS)
+    for (const f of CLUB_FIELDS) {
+      const a = clubAchieved(f, club)
+      if (a == null || a === 0) continue
+      const t = clubTarget(club.id, f.id)
+      assert.ok(t != null, `${club.name} / ${f.id} has a figure but no target`)
+      if (f.lowerIsBetter) assert.ok(t <= a)
+      else assert.ok(t >= a, `${club.name} / ${f.id}: target ${t} below achieved ${a}`)
+      paired++
+    }
+  assert.ok(paired > 200, `only ${paired} club cells paired`)
 })
 
 console.log(`\n${n} checks passed\n`)

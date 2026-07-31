@@ -1,41 +1,47 @@
-import { useParams } from 'react-router-dom'
-import { ZONE } from '@/data/zone6'
-import { FOUNDATION } from '@/data/metrics'
-import { clubsIn } from '@/lib/rollup'
+import { useParams, Navigate } from 'react-router-dom'
+import { DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { REPORT_CATEGORIES, fieldsInCategory, achievedFor } from '@/data/reportFields'
+import { targetValue } from '@/data/dishaTargets'
+import { useGoals } from '@/context/GoalsProvider'
 import { LevelBanner, DataNote } from '@/components/Bits'
-import GoalTable from '@/components/GoalTable'
+import ReportGoalForm from '@/components/ReportGoalForm'
 
 export default function DistrictGoals() {
   const { districtId } = useParams()
-  const clubIds = clubsIn(districtId).map((c) => c.id)
+  const { notify } = useGoals()
+  const d = DISHA_DISTRICTS.find((x) => x.number === String(districtId))
+  if (!d) return <Navigate to="/ri/districts" replace />
 
   return (
     <>
       <LevelBanner
-        eyebrow={`${ZONE.name} · goal entry`}
-        title={`District ${districtId} Goals`}
-        sub="Targets are fixed, with the zone target beside them for context"
+        eyebrow={`District ${d.number} · goal entry · ${GOALS_YEAR}`}
+        title={`District ${d.number} Goals`}
+        sub="Targets are fixed. Enter what the district has achieved against each one."
       />
 
       <div className="mb-4">
         <DataNote tone="slate">
-          Both target columns are read-only — your own and what {ZONE.name} has committed to. Enter the
-          achieved figures; the gap between a district target and its share of the zone target is meant
-          to be visible, not blocked.
+          The <strong>Target</strong> column is locked — it comes from the goal-setting event. Enter an
+          achieved figure and it recomputes here and on every level above.
         </DataNote>
       </div>
 
-      <GoalTable
-        scope="district"
-        scopeId={districtId}
-        metrics={FOUNDATION}
-        contextLabel="Zone target"
-        contextScope="zone"
-        contextId={ZONE.id}
-        childScope={clubIds.length ? 'club' : undefined}
-        childIds={clubIds}
-        childLabel="Club commitment"
+      <ReportGoalForm
+        categories={REPORT_CATEGORIES}
+        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'demo' }))}
+        scopeKey={`district:${d.id}`}
+        achieved={(f) => achievedFor(f, d)}
+        target={(f) => targetValue(d.id, f.id)}
+        notify={notify}
       />
+
+      <div className="mt-5">
+        <DataNote>
+          Achieved figures start from the {PREVIOUS_YEAR} data on file. Anything typed over one is
+          highlighted amber so it is never mistaken for source data.
+        </DataNote>
+      </div>
     </>
   )
 }

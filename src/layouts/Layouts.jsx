@@ -1,6 +1,7 @@
 import { useParams, Navigate } from 'react-router-dom'
 import Shell from '@/components/Shell'
-import { ZONE, getDistrict } from '@/data/zone6'
+import { ZONE } from '@/data/zone6'
+import { DISHA_DISTRICTS, DISHA_ZONES } from '@/data/disha'
 import { CLUBS } from '@/data/clubs'
 import { initials } from '@/lib/format'
 
@@ -58,9 +59,11 @@ export function ZoneLayout() {
 
 export function DistrictLayout() {
   const { districtId } = useParams()
-  const d = getDistrict(districtId)
-  if (!d) return <Navigate to="/zone/districts" replace />
+  // Look the district up in the Zone 5 & 6 data, so all 23 work rather than the earlier nine.
+  const d = DISHA_DISTRICTS.find((x) => x.number === String(districtId))
+  if (!d) return <Navigate to="/ri/districts" replace />
 
+  const zone = DISHA_ZONES.find((z) => z.id === d.zoneId)
   const nav = [
     { to: `/district/${districtId}/overview`, label: 'Overview' },
     { to: `/district/${districtId}/clubs`, label: 'Clubs' },
@@ -75,10 +78,10 @@ export function DistrictLayout() {
         [`/district/${districtId}/goals`]: `Goals — District ${districtId}`,
       }}
       fallbackTitle={`District ${districtId}`}
-      chip="DG" name={`District ${districtId}`} role="DG / DRFC Office"
+      chip="DG" name={`District ${districtId}`} role={d.governor ?? 'DG Office'}
       crumbs={[
         { label: 'RI Director', to: '/ri/overview' },
-        { label: ZONE.name, to: '/zone/overview' },
+        { label: zone?.name ?? 'Zone', to: '/ri/districts' },
         { label: `District ${districtId}` },
       ]}
     />
