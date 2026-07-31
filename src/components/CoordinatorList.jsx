@@ -17,21 +17,6 @@ export default function CoordinatorList() {
 
   return (
     <>
-      {/* The zone's figures first — the coordinator rows below are how that total is made up */}
-      <Card className="mb-6" title={`${ZONE.name} total`}
-            sub={`${DISTRICTS.length} districts, each counted exactly once`}>
-        <div className="flex flex-wrap gap-x-8 gap-y-4">
-          {HEADLINE.map((m) => (
-            <div key={m.id}>
-              <p className="eyebrow text-slate-400">{shortLabel(m)}</p>
-              <p className="font-display text-xl font-bold tabular-nums text-royal mt-1">
-                {fmt(zoneTotal(m.id), m.unit)}
-              </p>
-            </div>
-          ))}
-        </div>
-      </Card>
-
       {/* RRFC — leads the zone */}
       <div className="rounded-2xl p-5 mb-6 bg-white border border-gold/40 shadow-[0_1px_2px_rgba(10,26,51,0.04)]
                       relative overflow-hidden">
@@ -59,6 +44,30 @@ export default function CoordinatorList() {
           </div>
         </div>
       </div>
+
+      {/* The figure the RRFC is accountable for, read as one plate */}
+      <section className="rounded-2xl bg-ink text-white mb-7 overflow-hidden shadow-[0_2px_10px_rgba(10,26,51,0.18)]">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-4 pb-3">
+          <h3 className="font-display text-[15px] font-semibold flex items-center gap-2.5">
+            <span className="h-[3px] w-6 rounded-full bg-gold" />
+            {ZONE.name} total
+          </h3>
+          <p className="text-[11px] text-slate-400">
+            {DISTRICTS.length} districts · each counted exactly once
+          </p>
+        </div>
+        <div className="h-px bg-white/10 mx-5" />
+        <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-6 gap-y-5 px-5 py-5">
+          {HEADLINE.map((m) => (
+            <div key={m.id}>
+              <dt className="eyebrow text-slate-400">{shortLabel(m)}</dt>
+              <dd className="font-display text-[1.4rem] font-bold tabular-nums text-white mt-1.5 leading-none">
+                {fmt(zoneTotal(m.id), m.unit)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       <p className="eyebrow text-slate-400 mb-2.5 px-1">ARRFC — {ARRFC_ROLE_LONG}</p>
 
