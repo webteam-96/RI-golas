@@ -107,9 +107,7 @@ export default function Shell({ nav, titles, chip, name, role, crumbs, fallbackT
         </header>
 
         <main className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 sm:py-6">
-          <div className="max-w-[1400px] mx-auto">
-            <Outlet />
-          </div>
+          <Outlet />
         </main>
       </div>
     </div>
