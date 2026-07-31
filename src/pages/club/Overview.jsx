@@ -2,10 +2,12 @@ import { useParams, Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { CLUBS } from '@/data/clubs'
 import { ZONE } from '@/data/zone6'
+import { AREAS, areaLeadFor, shortLabel } from '@/data/headline'
 import { CLUB_METRICS } from '@/data/metrics'
 import { actualFor } from '@/lib/rollup'
-import { usdExact, num, pct } from '@/lib/format'
+import { fmt, usdExact, num, pct } from '@/lib/format'
 import { LevelBanner, Kpi, Card, Bar } from '@/components/Bits'
+import GoalDashboard from '@/components/GoalDashboard'
 
 // Metrics worth comparing a club against the levels above it.
 const COMPARE = ['myRotaryPct', 'trfPerCapita', 'growth']
@@ -14,13 +16,14 @@ export default function ClubOverview() {
   const { clubId } = useParams()
   const club = CLUBS.find((c) => c.id === clubId)
   const net = (club.membership.current ?? 0) - (club.membership.atRYStart ?? 0)
+  const president = typeof club.president === 'string' ? club.president : club.president?.name
 
   return (
     <>
       <LevelBanner
         eyebrow={`${ZONE.name} · District ${club.districtId}`}
         title={club.name}
-        sub={`Club ID ${club.id}${club.charterDate ? ` · chartered ${club.charterDate}` : ''}${club.president ? ` · President ${typeof club.president === 'string' ? club.president : club.president.name}` : ''}`}
+        sub={`Club ID ${club.id}${club.charterDate ? ` · chartered ${club.charterDate}` : ''}${president ? ` · President ${president}` : ''}`}
         right={
           <Link to={`/district/${club.districtId}/overview`}
                 className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-white/15 border border-white/30 hover:bg-white/25">
@@ -29,18 +32,20 @@ export default function ClubOverview() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-5">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
         <Kpi label="Members" value={num(club.membership.current)} sub={`${net > 0 ? '+' : ''}${net} this year`}
              tone={net > 0 ? 'green' : net < 0 ? 'rose' : 'blue'} />
-        <Kpi label="Female" value={num(club.membership.female)}
-             sub={club.membership.current ? pct((club.membership.female / club.membership.current) * 100) : '—'} tone="purple" />
-        <Kpi label="My Rotary" value={num(club.membership.myRotary)}
-             sub={club.membership.current ? pct((club.membership.myRotary / club.membership.current) * 100) : '—'} tone="blue" />
-        <Kpi label="TRF Giving" value={usdExact(club.trf.totalUSD)} tone="gold" sub="all funds" />
-        <Kpi label="Projects" value={num(club.service.projects)} tone="green" />
-        <Kpi label="Club Central Goals" value={`${club.excellence.goalsCompleted}/${club.excellence.goalsSet}`} tone="slate"
-             sub={club.excellence.awardEarned ? 'award earned' : 'no award'} />
+        {AREAS.map((a) => {
+          const m = areaLeadFor('club', a.id)
+          return (
+            <Kpi key={a.id} label={a.label} sub={shortLabel(m)}
+                 value={fmt(actualFor(m.id, 'club', clubId).value, m.unit)}
+                 tone={a.id === 'foundation' ? 'gold' : a.id === 'membership' ? 'blue' : a.id === 'publicimage' ? 'purple' : 'green'} />
+          )
+        })}
       </div>
+
+      <GoalDashboard scope="club" scopeId={clubId} />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <Card title="How we compare" sub="This club against its district and zone">
@@ -99,7 +104,6 @@ export default function ClubOverview() {
           </Link>
         </Card>
       </div>
-
     </>
   )
 }

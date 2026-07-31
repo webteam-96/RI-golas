@@ -20,8 +20,31 @@ export const AREA_METRIC_IDS = {
   projects: ['projects', 'volunteers', 'rotaract', 'interact'],
 }
 
+// A club reports its own Foundation giving; the 24 workbook rows are district-and-above and
+// resolve to null at club scope, so the club view swaps in the club-level equivalents.
+export const CLUB_AREA_LEAD = {
+  foundation: 'clubTrfUSD',
+  membership: 'members',
+  publicimage: 'piInitiatives',
+  projects: 'projects',
+}
+
+export const CLUB_AREA_METRIC_IDS = {
+  foundation: ['clubTrfUSD', 'trfAnnualUSD', 'trfPolioUSD', 'trfPerCapita', 'trfDonors'],
+  membership: ['members', 'netChange', 'female', 'myRotaryPct', 'attendance'],
+  publicimage: ['piInitiatives', 'piNewsletters', 'piOcv'],
+  projects: ['projects', 'volunteers', 'rotaract', 'interact'],
+}
+
 export const areaMetrics = (areaId) => (AREA_METRIC_IDS[areaId] ?? []).map(byId).filter(Boolean)
 export const areaLead = (areaId) => byId(AREA_LEAD[areaId])
+
+/** Same four areas at every scope; only the club swaps its Foundation metrics. */
+export const areaMetricsFor = (scope, areaId) =>
+  ((scope === 'club' ? CLUB_AREA_METRIC_IDS : AREA_METRIC_IDS)[areaId] ?? []).map(byId).filter(Boolean)
+
+export const areaLeadFor = (scope, areaId) =>
+  byId((scope === 'club' ? CLUB_AREA_LEAD : AREA_LEAD)[areaId])
 
 export const AREA_TONE = {
   foundation: 'gold',

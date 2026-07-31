@@ -113,12 +113,19 @@ export const SEED_ZONE_TARGETS = {
   epf: 8,
   bequestSociety: 3,
   archKlumpSociety: 2,
+  // Foundation, club-reported
+  clubTrfUSD: 1000000,
+  trfAnnualUSD: 75000,
+  trfPolioUSD: 15000,
+  trfPerCapita: 400,
+  trfDonors: 800,
   // Membership
   members: 3600,
   netChange: 400,
   newMembers: 30,
   female: 900,
   myRotaryPct: 70,
+  attendance: 75,
   // Public Image
   piInitiatives: 40,
   piNewsletters: 12,

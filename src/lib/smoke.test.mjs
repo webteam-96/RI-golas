@@ -6,7 +6,9 @@ import { CLUBS } from '../data/clubs.js'
 import { FOUNDATION, CLUB_METRICS, AREAS, metricsFor, metricsInArea } from '../data/metrics.js'
 import { AREA_METRIC_IDS, AREA_LEAD, areaLead } from '../data/headline.js'
 import { ZONE, DISTRICTS } from '../data/zone6.js'
-import { actualFor, coordinatorTotal, clubsIn } from './rollup.js'
+import { actualFor, coordinatorTotal, clubsIn, achievement } from './rollup.js'
+import { seedTargets, goalKey } from '../data/seedTargets.js'
+import { areaMetricsFor, areaLeadFor } from '../data/headline.js'
 
 let n = 0
 const check = (name, fn) => { fn(); n++; console.log('  ok  ' + name) }
@@ -111,6 +113,74 @@ check('each area lead and column metric resolves to a real metric', () => {
     }
   }
   assert.deepEqual(Object.keys(AREA_LEAD).sort(), AREAS.map((a) => a.id).sort())
+})
+
+// Every level renders the same achievement block. If a scope has no seeded targets its
+// dashboard shows a page of dashes, which looks like a bug on the projector.
+check('seeded targets make every level scorable', () => {
+  const seed = seedTargets()
+  const score = (scope, id) => {
+    const metrics = AREAS.flatMap((a) => areaMetricsFor(scope, a.id))
+    return achievement(metrics.map((m) => ({
+      target: seed[goalKey(scope, id, m.id)]?.target ?? null,
+      actual: actualFor(m.id, scope, id).value,
+      higherIsBetter: m.higherIsBetter,
+    })))
+  }
+
+  const ri = score('ri', 'ri')
+  assert.ok(ri.attainment > 0, 'RI has no scorable goals')
+  assert.equal(ri.scored, ri.total, 'every RI goal should be scorable')
+
+  const zone = score('zone', ZONE.id)
+  assert.ok(zone.attainment > 0, 'zone has no scorable goals')
+
+  // D3120 carries the club roster. Public Image is the only gap — the 3192 records have no
+  // such columns — so 13 of 16 must score.
+  const d3120 = score('district', '3120')
+  assert.ok(d3120.attainment > 0, 'D3120 has no scorable goals')
+  assert.equal(d3120.scored, 13, 'D3120 should score everything except the 3 Public Image goals')
+
+  // A district with no roster still scores Foundation and simply cannot score the rest.
+  const d3261 = score('district', '3261')
+  assert.ok(d3261.scored > 0, 'D3261 should still score its Foundation goals')
+  assert.ok(d3261.scored < d3261.total, 'D3261 has no clubs, so some goals must be unscored')
+
+  const club = score('club', '15766')
+  assert.ok(club.attainment > 0, 'club has no scorable goals')
+  assert.ok(club.scored >= 9, `club scored only ${club.scored} goals`)
+})
+
+// A pure proportional split gives a child contributing nothing a target of zero, which leaves
+// it unscored instead of behind — the worst performers would vanish from the average.
+check('a district contributing nothing still gets a target it can miss', () => {
+  const seed = seedTargets()
+  // D3120 reports no PHSM at all.
+  const t = seed[goalKey('district', '3120', 'phsmPaulHarrisSocietyMember')]?.target
+  assert.ok(t > 0, 'a zero-contributing district must still carry a target')
+  assert.equal(actualFor('phsmPaulHarrisSocietyMember', 'district', '3120').value, 0)
+})
+
+// A rate is not a total. Every level aims at the same percentage, not a slice of it.
+check('rate targets pass down unchanged; totals are split', () => {
+  const seed = seedTargets()
+  const zoneRate = seed[goalKey('zone', ZONE.id, 'myRotaryPct')].target
+  assert.equal(seed[goalKey('district', '3120', 'myRotaryPct')].target, zoneRate)
+  assert.equal(seed[goalKey('club', '15766', 'myRotaryPct')].target, zoneRate)
+
+  const zoneTotal = seed[goalKey('zone', ZONE.id, 'annualFund')].target
+  const dTotal = seed[goalKey('district', '3120', 'annualFund')].target
+  assert.ok(dTotal < zoneTotal, 'a district share of a total must be smaller than the zone target')
+})
+
+check('every area lead resolves at the scope it is used in', () => {
+  for (const scope of ['ri', 'zone', 'district', 'club'])
+    for (const a of AREAS) {
+      const m = areaLeadFor(scope, a.id)
+      assert.ok(m, `${scope}/${a.id} has no lead metric`)
+      assert.equal(m.area, a.id)
+      assert.ok(areaMetricsFor(scope, a.id).length > 0, `${scope}/${a.id} has no metrics`)
+    }
 })
 
 console.log(`\n${n} checks passed\n`)
