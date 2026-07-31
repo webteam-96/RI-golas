@@ -21,11 +21,15 @@ const val = (fieldId) => (d) => {
   return typeof n === 'number' && Number.isFinite(n) ? n : null
 }
 
+// New Generation is Rotary's fifth Avenue of Service — Rotaract, Interact and RCC. The PDF
+// folds it into section 5 alongside service projects; splitting it out keeps Projects to the
+// one thing it measures.
 export const REPORT_CATEGORIES = [
   { id: 'membership',  pdf: 2, label: 'Membership' },
   { id: 'foundation',  pdf: 3, label: 'Foundation' },
   { id: 'publicimage', pdf: 4, label: 'Public Image' },
   { id: 'projects',    pdf: 5, label: 'Projects' },
+  { id: 'newgen',      pdf: 5, label: 'New Generation' },
 ]
 
 export const REPORT_FIELDS = [
@@ -56,13 +60,15 @@ export const REPORT_FIELDS = [
   { id: 'piEvents',      cat: 'publicimage', label: 'Public image events held',  unit: 'nos', src: null },
   { id: 'brandReviews',  cat: 'publicimage', label: 'Brand consistency reviews', unit: 'nos', src: null },
 
-  // §5 Service & New Club Development
-  { id: 'rotaractClubs', cat: 'projects', label: 'Rotaract clubs',            unit: 'nos', src: 39 },
-  { id: 'rotaractors',   cat: 'projects', label: 'Rotaractors',               unit: 'nos', src: 40 },
-  { id: 'interactClubs', cat: 'projects', label: 'Interact clubs',            unit: 'nos', src: 45 },
-  { id: 'rccClubs',      cat: 'projects', label: 'Rotary Community Corps',    unit: 'nos', src: 48 },
+  // §5 Service
   { id: 'serviceProjects', cat: 'projects', label: 'Active service projects', unit: 'nos', src: null },
-  { id: 'newClubsDev',   cat: 'projects', label: 'New clubs in development',  unit: 'nos', src: null },
+
+  // §5 New Club Development & New Generation
+  { id: 'rotaractClubs', cat: 'newgen', label: 'Rotaract clubs',           unit: 'nos', src: 39 },
+  { id: 'rotaractors',   cat: 'newgen', label: 'Rotaractors',              unit: 'nos', src: 40 },
+  { id: 'interactClubs', cat: 'newgen', label: 'Interact clubs',           unit: 'nos', src: 45 },
+  { id: 'rccClubs',      cat: 'newgen', label: 'Rotary Community Corps',   unit: 'nos', src: 48 },
+  { id: 'newClubsDev',   cat: 'newgen', label: 'New clubs in development', unit: 'nos', src: null },
 ].map((f) => ({ ...f, get: f.src ? val(f.src) : () => null }))
 
 export const fieldsInCategory = (catId) => REPORT_FIELDS.filter((f) => f.cat === catId)

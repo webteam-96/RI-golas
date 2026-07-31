@@ -114,13 +114,18 @@ check('numbers use Indian grouping and only abbreviate past a million', () => {
 
 console.log('\nmonthly report fields')
 
-check('the four report sections match the PDF, and RAG / Summary are gone', () => {
+check('the report sections match the PDF, and RAG / Summary are gone', () => {
   assert.deepEqual(REPORT_CATEGORIES.map((c) => c.id),
-    ['membership', 'foundation', 'publicimage', 'projects'])
-  assert.deepEqual(REPORT_CATEGORIES.map((c) => c.pdf), [2, 3, 4, 5])
+    ['membership', 'foundation', 'publicimage', 'projects', 'newgen'])
   const names = REPORT_FIELDS.map((f) => f.label.toLowerCase()).join(' ')
   assert.ok(!names.includes('rag'), 'RAG Analysis must not appear')
   assert.ok(!/\bamber\b|\bsuper green\b/.test(names), 'RAG bands must not appear')
+})
+
+check('Projects holds service projects alone; the rest moved to New Generation', () => {
+  assert.deepEqual(fieldsInCategory('projects').map((f) => f.id), ['serviceProjects'])
+  assert.deepEqual(fieldsInCategory('newgen').map((f) => f.id),
+    ['rotaractClubs', 'rotaractors', 'interactClubs', 'rccClubs', 'newClubsDev'])
 })
 
 check('every field belongs to one of the four sections and carries a unit', () => {

@@ -7,7 +7,10 @@ import { LevelBanner, Kpi, Bar, DataNote } from '@/components/Bits'
 import WheelGauge from '@/components/WheelGauge'
 import GoalMatrix from '@/components/GoalMatrix'
 
-const AREA_COLOR = { membership: '#003DA5', foundation: '#F7A81B', publicimage: '#9333EA', projects: '#009739' }
+const AREA_COLOR = {
+  membership: '#003DA5', foundation: '#F7A81B', publicimage: '#9333EA',
+  projects: '#009739', newgen: '#0891B2',
+}
 
 /** Mean attainment over a set of fields, each capped at 100 so one overachiever cannot mask
  *  the rest. Returns null when nothing in the set can be scored. */
