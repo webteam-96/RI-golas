@@ -55,20 +55,12 @@ export default function GoalMatrix({
             <button
               key={c.id}
               onClick={() => setCatId(c.id)}
-              className={`flex items-baseline gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold border transition-all ${
+              className={`px-5 py-2.5 rounded-xl text-[13px] font-semibold border transition-all ${
                 on ? 'bg-royal text-white border-royal shadow-sm'
                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-ink'
               }`}
             >
-              {c.badge != null && (
-                <span className={`font-data text-[10px] ${on ? 'text-blue-200' : 'text-slate-300'}`}>
-                  {c.badge}
-                </span>
-              )}
               {c.label}
-              <span className={`font-data text-[10px] ${on ? 'text-blue-200' : 'text-slate-400'}`}>
-                {fields(c.id).length}
-              </span>
             </button>
           )
         })}

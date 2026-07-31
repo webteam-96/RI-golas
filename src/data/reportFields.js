@@ -67,7 +67,22 @@ export const REPORT_FIELDS = [
 
 export const fieldsInCategory = (catId) => REPORT_FIELDS.filter((f) => f.cat === catId)
 
-export const achievedFor = (field, district) => field.get(district)
+/**
+ * Achieved figure. Falls back to a demo figure for the rows the datasets do not cover — the
+ * whole Public Image section and a few others — so every category shows a number against its
+ * target rather than a column of dashes. Demo rows are marked in the UI.
+ *
+ * Imported lazily to keep this module free of a cycle: dishaTargets reads REPORT_FIELDS.
+ */
+export function achievedFor(field, district) {
+  const real = field.get(district)
+  if (real !== null) return real
+  // eslint-disable-next-line no-use-before-define
+  return demoRef.fn ? demoRef.fn(field, district) : null
+}
+
+/** Wired up once by dishaTargets so the two modules can lean on each other without a cycle. */
+export const demoRef = { fn: null }
 
 /** How much of the form is backed by data — worth stating on the page rather than hiding. */
 export const SOURCED_FIELDS = REPORT_FIELDS.filter((f) => f.src).length

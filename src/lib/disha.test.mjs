@@ -133,29 +133,60 @@ check('every field belongs to one of the four sections and carries a unit', () =
   assert.equal(grouped.length, REPORT_FIELDS.length, 'a field is missing from its section')
 })
 
-check('a sourced field reads real data; an unsourced one reads null, never zero', () => {
+check('a sourced field reads the real figure, not a demo one', () => {
   const d = DISHA_DISTRICTS.find((x) => x.number === '2981')
   const members = REPORT_FIELDS.find((f) => f.id === 'membersStart')
   assert.equal(achievedFor(members, d), 6355)          // seed-previous-year-membership
+  assert.equal(members.get(d), 6355)
+})
+
+// A figure that changes on refresh is worse than no figure: the same cell must read the same
+// on every render, and every category must have something to show.
+check('demo figures are stable and cover every category', () => {
+  const d = DISHA_DISTRICTS.find((x) => x.number === '2981')
   const erey = REPORT_FIELDS.find((f) => f.id === 'ereyPct')
   assert.equal(erey.src, null)
-  assert.equal(achievedFor(erey, d), null)
+  assert.equal(erey.get(d), null, 'the raw getter still reports no dataset')
+  const first = achievedFor(erey, d)
+  assert.ok(typeof first === 'number', 'an unsourced field still shows a demo figure')
+  assert.equal(achievedFor(erey, d), first, 'the same cell must not change between reads')
+
+  for (const c of REPORT_CATEGORIES)
+    for (const f of fieldsInCategory(c.id))
+      assert.ok(achievedFor(f, d) != null, `${c.label} / ${f.id} has nothing to show`)
+})
+
+check('demo figures differ between districts and between fields', () => {
+  const f = REPORT_FIELDS.find((x) => x.id === 'mediaMentions')
+  const vals = DISHA_DISTRICTS.map((d) => achievedFor(f, d))
+  assert.ok(new Set(vals).size > 5, 'every district got the same figure')
+  const d = DISHA_DISTRICTS[0]
+  const across = ['mediaMentions', 'piEvents', 'brandReviews']
+    .map((id) => achievedFor(REPORT_FIELDS.find((x) => x.id === id), d))
+  assert.equal(new Set(across).size, across.length, 'fields share a figure')
 })
 
 // Every cell pairs an achieved figure with a target, so a target that is missing or sits below
 // what has already been achieved would read as a failure that isn't.
-check('a demo target exists wherever there is an achieved figure to measure', () => {
-  let paired = 0
+check('every achieved figure has a target, pointing the right way', () => {
+  let paired = 0, lower = 0
   for (const d of DISHA_DISTRICTS)
     for (const f of REPORT_FIELDS) {
       const a = achievedFor(f, d)
       if (a == null || a === 0) continue
       const t = targetValue(d.id, f.id)
       assert.ok(t != null, `${d.number} / ${f.id} has an achieved figure but no target`)
-      assert.ok(t >= a, `${d.number} / ${f.id}: target ${t} sits below achieved ${a}`)
+      if (f.lowerIsBetter) {
+        // Fewer terminations and closures is the goal, so the target sits below today's figure.
+        assert.ok(t <= a, `${d.number} / ${f.id}: lower-is-better target ${t} sits above achieved ${a}`)
+        lower++
+      } else {
+        assert.ok(t >= a, `${d.number} / ${f.id}: target ${t} sits below achieved ${a}`)
+      }
       paired++
     }
-  assert.ok(paired > 150, `only ${paired} cells paired`)
+  assert.ok(paired > 400, `only ${paired} cells paired`)
+  assert.ok(lower > 0, 'no lower-is-better field was exercised')
 })
 
 check('no target exists where there is nothing to measure', () => {
