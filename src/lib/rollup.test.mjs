@@ -4,7 +4,7 @@
 import assert from 'node:assert/strict'
 import {
   actualFor, zoneTotal, coordinatorTotal, aggregateClubs,
-  percentAchieved, goalStatus, onTrackYN, clubsIn,
+  percentAchieved, goalStatus, onTrackYN, clubsIn, achievement,
 } from './rollup.js'
 import { ZONE } from '../data/zone6.js'
 import { clubMetric } from '../data/metrics.js'
@@ -107,6 +107,37 @@ check('district roll-up of club metrics stays consistent with the club list', ()
   const byHand = clubsIn('3120').reduce((s, c) => s + (c.membership.current ?? 0), 0)
   assert.equal(members, byHand)
   assert.ok(members > 0)
+})
+
+check('achievement caps each goal at 100 so one overachiever cannot mask failures', () => {
+  const r = achievement([
+    { target: 100, actual: 400 },   // 400% -> capped to 100
+    { target: 100, actual: 10 },
+    { target: 100, actual: 10 },
+    { target: 100, actual: 10 },
+  ], 9)
+  assert.equal(r.attainment, (100 + 10 + 10 + 10) / 4)   // 32.5, not 107.5
+  assert.ok(r.attainment < 100, 'three failing goals must not average above 100')
+  assert.equal(r.achieved, 1)
+  assert.equal(r.onTrack, 1)
+})
+
+check('achievement counts unscored goals without letting them flatter the average', () => {
+  const r = achievement([
+    { target: 100, actual: 80 },
+    { target: null, actual: 50 },   // no target set
+    { target: 100, actual: null },  // nothing reported
+  ], 9)
+  assert.equal(r.total, 3)
+  assert.equal(r.scored, 1)
+  assert.equal(r.attainment, 80)
+})
+
+check('achievement is empty-safe', () => {
+  const r = achievement([], 9)
+  assert.equal(r.attainment, null)
+  assert.equal(r.total, 0)
+  assert.equal(r.onTrack, 0)
 })
 
 console.log(`\n${n} checks passed\n`)

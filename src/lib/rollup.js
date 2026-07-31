@@ -135,6 +135,35 @@ export function goalStatus(percent, monthsElapsed = MONTHS_ELAPSED) {
   return 'behind'
 }
 
+/**
+ * Scorecard for a set of goals — "how much have we achieved".
+ *
+ * `attainment` caps each goal at 100% before averaging. Without the cap one goal sitting at
+ * 400% would drag the average above 100 and hide three goals that are failing, which is the
+ * opposite of what a Director is looking at this number for.
+ *
+ * Goals with no target or no actual are counted in `total` but excluded from the average,
+ * so "3 of 9 scored" is visible rather than silently improving the number.
+ */
+export function achievement(goals, monthsElapsed = MONTHS_ELAPSED) {
+  const pcts = goals
+    .map((g) => percentAchieved(g.target, g.actual, g.higherIsBetter !== false))
+    .filter((p) => p !== null)
+
+  const onTrack = pcts.filter((p) => {
+    const s = goalStatus(p, monthsElapsed)
+    return s === 'achieved' || s === 'ontrack'
+  }).length
+
+  return {
+    total: goals.length,
+    scored: pcts.length,
+    onTrack,
+    achieved: pcts.filter((p) => p >= 100).length,
+    attainment: pcts.length ? pcts.reduce((s, p) => s + Math.min(p, 100), 0) / pcts.length : null,
+  }
+}
+
 export const STATUS_META = {
   achieved: { label: 'Achieved',  color: '#16A34A', cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
   ontrack:  { label: 'On Track',  color: '#16A34A', cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
