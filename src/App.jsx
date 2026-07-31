@@ -8,7 +8,6 @@ import DistrictDetail from '@/pages/admin/DistrictDetail'
 import RiCoordinators from '@/pages/ri/Coordinators'
 import CoordinatorDetail from '@/pages/ri/CoordinatorDetail'
 
-import ZoneOverview from '@/pages/zone/Overview'
 import Coordinators from '@/pages/zone/Coordinators'
 import ZoneDistricts from '@/pages/zone/Districts'
 import ZoneGoals from '@/pages/zone/Goals'
@@ -48,7 +47,8 @@ export default function App() {
 
           <Route path="/zone" element={<ZoneLayout />}>
             <Route index element={<Navigate to="/zone/coordinators" replace />} />
-            <Route path="overview" element={<ZoneOverview />} />
+            {/* Retired: the zone-wide picture belongs to the RI Director, not to one ARRFC. */}
+            <Route path="overview" element={<Navigate to="/zone/coordinators" replace />} />
             <Route path="coordinators" element={<Coordinators />} />
             <Route path="districts" element={<ZoneDistricts />} />
             <Route path="goals" element={<ZoneGoals />} />

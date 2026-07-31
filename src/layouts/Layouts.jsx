@@ -35,7 +35,6 @@ export function ZoneLayout() {
   const me = signedInCoordinator()
   const nav = [
     { to: '/zone/coordinators', label: 'My Districts' },
-    { to: '/zone/overview', label: 'Zone Overview' },
     { to: '/zone/districts', label: 'All Districts' },
     { to: '/zone/goals', label: 'Goals' },
     { to: '/zone/foundation', label: 'Foundation Grid' },
@@ -46,7 +45,6 @@ export function ZoneLayout() {
       nav={nav}
       titles={{
         '/zone/coordinators': 'My Districts',
-        '/zone/overview': 'Zone 6 Overview',
         '/zone/districts': 'All Districts',
         '/zone/goals': 'Goals — Zone Targets',
         '/zone/foundation': 'Foundation Goals Grid',
