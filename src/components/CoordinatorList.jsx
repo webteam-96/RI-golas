@@ -17,6 +17,21 @@ export default function CoordinatorList() {
 
   return (
     <>
+      {/* The zone's figures first — the coordinator rows below are how that total is made up */}
+      <Card className="mb-6" title={`${ZONE.name} total`}
+            sub={`${DISTRICTS.length} districts, each counted exactly once`}>
+        <div className="flex flex-wrap gap-x-8 gap-y-4">
+          {HEADLINE.map((m) => (
+            <div key={m.id}>
+              <p className="eyebrow text-slate-400">{shortLabel(m)}</p>
+              <p className="font-display text-xl font-bold tabular-nums text-royal mt-1">
+                {fmt(zoneTotal(m.id), m.unit)}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* RRFC — leads the zone */}
       <div className="rounded-2xl p-5 mb-6 bg-white border border-gold/40 shadow-[0_1px_2px_rgba(10,26,51,0.04)]
                       relative overflow-hidden">
@@ -131,20 +146,7 @@ export default function CoordinatorList() {
         })}
       </div>
 
-      <Card className="mt-5" title={`${ZONE.name} total`} sub={`${DISTRICTS.length} districts, each counted exactly once`}>
-        <div className="flex flex-wrap gap-x-8 gap-y-4">
-          {HEADLINE.map((m) => (
-            <div key={m.id}>
-              <p className="eyebrow text-slate-400">{shortLabel(m)}</p>
-              <p className="font-display text-xl font-bold tabular-nums text-royal mt-1">
-                {fmt(zoneTotal(m.id), m.unit)}
-              </p>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <div className="mt-4 space-y-2">
+      <div className="mt-5 space-y-2">
         <DataNote tone="slate">
           <strong>D{ZONE.rrfc.homeDistrict} appears twice</strong> — it is RRFC {ZONE.rrfc.name}&apos;s home
           district and is also supported by ARRFC Jhunjhunuwala. The zone total sums the {DISTRICTS.length}{' '}
