@@ -5,6 +5,7 @@ import { actualFor, percentAchieved, goalStatus, onTrackYN, achievement } from '
 import { useGoals } from '@/context/GoalsProvider'
 import { fmt, pct } from '@/lib/format'
 import { Card, StatusPill, Bar, EmptyState } from './Bits'
+import WheelGauge from './WheelGauge'
 
 /**
  * The goal half of every dashboard: achievement summary, then all four areas expanded, then
@@ -29,53 +30,49 @@ export default function GoalDashboard({ scope, scopeId, childScope, items = [], 
 
   return (
     <>
-      {/* How much has been achieved */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5 mb-6">
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Achievement to date</p>
-            <div className="flex items-baseline gap-3 mt-1">
-              <span className="text-4xl font-extrabold tabular-nums" style={{ color: '#003DA5' }}>
-                {overall.attainment == null ? '—' : pct(overall.attainment)}
-              </span>
-              <span className="text-sm text-slate-500">
-                <strong className="text-slate-800">{overall.onTrack}</strong> of{' '}
-                <strong className="text-slate-800">{overall.total}</strong> goals on track ·{' '}
-                <strong className="text-emerald-600">{overall.achieved}</strong> fully achieved
-              </span>
-            </div>
-          </div>
-          <p className="text-[11px] text-slate-400 max-w-xs leading-relaxed">
-            Average attainment across all goals, each capped at 100% so one overachieving goal cannot
-            mask the ones falling short.
-            {overall.scored < overall.total && (
-              <> {overall.total - overall.scored} goal{overall.total - overall.scored === 1 ? '' : 's'} not
-              scored — no target set or nothing reported.</>
-            )}
-          </p>
-        </div>
-
-        <Bar value={overall.attainment ?? 0} max={100} color="#003DA5" height="h-3" />
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
-          {areaBlocks.map(({ a, score }) => (
-            <div key={a.id}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-600">
-                  <span className="h-1 w-4 rounded-full" style={{ background: AREA_COLOR[a.id] }} />
-                  {a.label}
-                </span>
-                <span className="text-sm font-extrabold tabular-nums text-slate-800">
-                  {score.attainment == null ? '—' : pct(score.attainment)}
-                </span>
-              </div>
-              <Bar value={score.attainment ?? 0} max={100} color={AREA_COLOR[a.id]} />
-              <p className="text-[10px] text-slate-400 mt-1">
-                {score.onTrack} of {score.total} on track
-                {score.scored < score.total && ` · ${score.total - score.scored} unscored`}
+      {/* Achievement — the wheel fills as goals are met */}
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(10,26,51,0.04)] p-5 sm:p-6 mb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
+          <div className="flex items-center gap-5">
+            <WheelGauge value={overall.attainment} />
+            <div className="min-w-0">
+              <p className="eyebrow text-slate-400">Achievement to date</p>
+              <p className="font-display text-2xl font-bold text-ink leading-tight mt-1.5">
+                {overall.onTrack} of {overall.total} goals on track
+              </p>
+              <p className="text-[13px] text-slate-500 mt-1">
+                <span className="font-semibold text-[#00702A]">{overall.achieved}</span> fully achieved
+                {overall.scored < overall.total && (
+                  <> · <span className="font-semibold text-slate-600">{overall.total - overall.scored}</span> not scored</>
+                )}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-2.5 max-w-sm leading-relaxed">
+                Each goal is capped at 100% before averaging, so one overachieving goal cannot mask the
+                ones falling short.
               </p>
             </div>
-          ))}
+          </div>
+
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 lg:border-l lg:border-slate-100 lg:pl-8">
+            {areaBlocks.map(({ a, score }) => (
+              <div key={a.id}>
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="flex items-center gap-2 text-[12px] font-semibold text-slate-600">
+                    <span className="h-[3px] w-4 rounded-full" style={{ background: AREA_COLOR[a.id] }} />
+                    {a.label}
+                  </span>
+                  <span className="font-data text-[13px] font-semibold text-ink">
+                    {score.attainment == null ? '—' : pct(score.attainment)}
+                  </span>
+                </div>
+                <Bar value={score.attainment ?? 0} max={100} color={AREA_COLOR[a.id]} height="h-2" />
+                <p className="text-[10px] text-slate-400 mt-1.5">
+                  {score.onTrack} of {score.total} on track
+                  {score.scored < score.total && ` · ${score.total - score.scored} unscored`}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -90,13 +87,13 @@ export default function GoalDashboard({ scope, scopeId, childScope, items = [], 
 
         return (
           <div key={a.id} className="mb-6">
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <span className="h-1 w-8 rounded-full" style={{ background: AREA_COLOR[a.id] }} />
-              <h2 className="text-lg font-extrabold text-slate-800">{a.label}</h2>
-              <span className="text-sm font-extrabold tabular-nums" style={{ color: AREA_COLOR[a.id] }}>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3 pb-2.5 border-b border-slate-200/70">
+              <span className="h-[3px] w-8 rounded-full self-center" style={{ background: AREA_COLOR[a.id] }} />
+              <h2 className="font-display text-[1.15rem] font-semibold text-ink">{a.label}</h2>
+              <span className="font-data text-[13px] font-semibold" style={{ color: AREA_COLOR[a.id] }}>
                 {score.attainment == null ? '—' : `${pct(score.attainment)} achieved`}
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-[11px] text-slate-400">
                 {score.onTrack} of {score.total} goals on track
                 {score.achieved > 0 && ` · ${score.achieved} fully achieved`}
               </span>

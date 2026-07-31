@@ -164,12 +164,14 @@ export function achievement(goals, monthsElapsed = MONTHS_ELAPSED) {
   }
 }
 
+// Colours are Rotary's own official secondary palette — Grass, Orange, Cranberry — rather
+// than generic greens and reds, so status reads as part of the brand rather than bolted on.
 export const STATUS_META = {
-  achieved: { label: 'Achieved',  color: '#16A34A', cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
-  ontrack:  { label: 'On Track',  color: '#16A34A', cls: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
-  atrisk:   { label: 'At Risk',   color: '#F59E0B', cls: 'bg-amber-100 text-amber-700 border-amber-300' },
-  behind:   { label: 'Behind',    color: '#E11D48', cls: 'bg-rose-100 text-rose-700 border-rose-300' },
-  nodata:   { label: 'No data',   color: '#94A3B8', cls: 'bg-slate-100 text-slate-500 border-slate-200' },
+  achieved: { label: 'Achieved', color: '#009739', cls: 'bg-[#009739]/10 text-[#00702A] border-[#009739]/25' },
+  ontrack:  { label: 'On Track', color: '#009739', cls: 'bg-[#009739]/10 text-[#00702A] border-[#009739]/25' },
+  atrisk:   { label: 'At Risk',  color: '#FF7600', cls: 'bg-[#FF7600]/10 text-[#B85400] border-[#FF7600]/25' },
+  behind:   { label: 'Behind',   color: '#C8102E', cls: 'bg-[#C8102E]/10 text-[#9B0C23] border-[#C8102E]/25' },
+  nodata:   { label: 'No data',  color: '#B5B5B5', cls: 'bg-slate-100 text-slate-500 border-slate-200' },
 }
 
 /** onTrack maps to the PDF's "On Track (Y/N)" column. */

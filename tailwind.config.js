@@ -7,7 +7,22 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['Zilla Slab', 'Georgia', 'serif'],
+        sans: ['Open Sans', 'system-ui', 'sans-serif'],
+        data: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
+      },
       colors: {
+        // Rotary's own palette — primary is mandated, the secondaries are the official
+        // Rotary secondary colours and are used for goal status.
+        royal: '#003DA5',
+        gold: '#F7A81B',
+        azure: '#0067C8',
+        ink: '#0A1A33',
+        ledger: '#F1F4FA',
+        grass: '#009739',
+        cranberry: '#C8102E',
+        smoke: '#B5B5B5',
         rotary: {
           blue: '#003DA5',
           gold: '#F7A81B',

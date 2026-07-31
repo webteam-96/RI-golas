@@ -1,29 +1,59 @@
+/* Rotary's brand pairing is Sentinel (slab) + Open Sans. Sentinel is licensed, so Zilla Slab
+   stands in for the display role; Open Sans is the real brand face. IBM Plex Mono carries the
+   data — tabular figures and the small engraved labels. */
+@import '@fontsource/zilla-slab/500.css';
+@import '@fontsource/zilla-slab/600.css';
+@import '@fontsource/zilla-slab/700.css';
+@import '@fontsource/open-sans/400.css';
+@import '@fontsource/open-sans/600.css';
+@import '@fontsource/open-sans/700.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    /* Rotary primary — mandated */
+    --royal: #003DA5;
+    --gold: #F7A81B;
+    --azure: #0067C8;
+
+    /* Ground and engraving */
+    --ink: #0A1A33;
+    --ledger: #F1F4FA;
+
+    /* Rotary's official secondary palette, used for goal status rather than generic
+       greens and reds. These are the organisation's own colours. */
+    --grass: #009739;
+    --orange: #FF7600;
+    --cranberry: #C8102E;
+    --smoke: #B5B5B5;
+
+    --radius: 0.75rem;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 100% 32%;
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 215 45% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 45% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --popover-foreground: 215 45% 12%;
+    --primary: 217 100% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 32% 96%;
+    --secondary-foreground: 215 45% 12%;
+    --muted: 214 32% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 214 32% 96%;
+    --accent-foreground: 215 45% 12%;
+    --destructive: 350 85% 42%;
+    --destructive-foreground: 0 0% 100%;
   }
 
   * {
@@ -31,17 +61,57 @@
   }
 
   body {
-    background-color: hsl(var(--background));
+    background-color: var(--ledger);
     color: hsl(var(--foreground));
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Open Sans', system-ui, sans-serif;
+    font-feature-settings: 'cv05' 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Display face: institutional, ceremonial, set tight. */
+  h1, h2, .font-display {
+    font-family: 'Zilla Slab', Georgia, serif;
+    letter-spacing: -0.015em;
+  }
+
+  /* Every figure on screen is compared to another figure, so all of them are tabular. */
+  .tabular-nums, table, input[type='number'] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--azure);
+    outline-offset: 2px;
   }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f5f9; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+@layer utilities {
+  /* Small engraved labels — the instrument-panel voice. */
+  .eyebrow {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-weight: 500;
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .font-data {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .rule-gold {
+    background: linear-gradient(90deg, var(--gold) 0%, rgba(247, 168, 27, 0) 100%);
+  }
+}
 
-/* Rotary utilities */
-.rotary-blue { color: #003DA5; }
-.bg-rotary-blue { background-color: #003DA5; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #C7D2E4; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #A8B8D0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
