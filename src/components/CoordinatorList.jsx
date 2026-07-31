@@ -44,41 +44,27 @@ export default function CoordinatorList() {
 
   return (
     <>
-      {/* RRFC — covers the whole zone, so these figures are the zone's */}
-      <div className="rounded-2xl p-5 mb-6 bg-white border border-gold/40 shadow-[0_1px_2px_rgba(10,26,51,0.04)]
+      {/* RRFC — named as the lead, but carries no figures here. His slice is the whole zone,
+          so showing it beside the ARRFCs would put a total in a list of parts. */}
+      <div className="rounded-2xl px-5 py-4 mb-6 bg-white border border-gold/40 shadow-[0_1px_2px_rgba(10,26,51,0.04)]
                       relative overflow-hidden">
         <span className="absolute left-0 top-0 bottom-0 w-1 bg-gold" />
-        <div className="flex flex-wrap items-start justify-between gap-5 pl-2">
-          <div className="flex items-start gap-3.5">
-            <span className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gold">
-              <Star size={19} className="text-ink" fill="#0A1A33" />
-            </span>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="eyebrow px-2 py-0.5 rounded bg-royal text-white">RRFC</span>
-                <Link to={`/ri/coordinators/${ZONE.rrfc.id}`}
-                      className="font-display text-[1.3rem] font-bold text-ink hover:text-royal hover:underline leading-none">
-                  {ZONE.rrfc.name}
-                </Link>
-              </div>
-              <p className="text-[12px] text-slate-500 mt-1.5">
-                {ZONE.rrfc.roleLong} · home district <strong className="text-slate-700">{ZONE.rrfc.homeDistrict}</strong> ·
-                all {ZONE6.length} districts
-              </p>
+        <div className="flex items-start gap-3.5 pl-2">
+          <span className="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-gold">
+            <Star size={17} className="text-ink" fill="#0A1A33" />
+          </span>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="eyebrow px-2 py-0.5 rounded bg-royal text-white">RRFC</span>
+              <Link to={`/ri/coordinators/${ZONE.rrfc.id}`}
+                    className="font-display text-[1.15rem] font-bold text-ink hover:text-royal hover:underline leading-none">
+                {ZONE.rrfc.name}
+              </Link>
             </div>
-          </div>
-          <div className="flex flex-wrap gap-5 text-right">
-            {REPORT_CATEGORIES.map((cat) => {
-              const f = leadField(cat.id)
-              return (
-                <div key={cat.id}>
-                  <p className="eyebrow text-slate-400" style={{ fontSize: '0.5625rem' }}>{cat.label}</p>
-                  <p className="font-data text-[15px] font-semibold text-ink mt-0.5">
-                    {dishaNumber(sumOver(f, ZONE6), f?.unit) ?? '—'}
-                  </p>
-                </div>
-              )
-            })}
+            <p className="text-[12px] text-slate-500 mt-1.5">
+              {ZONE.rrfc.roleLong} · home district <strong className="text-slate-700">{ZONE.rrfc.homeDistrict}</strong> ·
+              leads all {ZONE6.length} districts
+            </p>
           </div>
         </div>
       </div>
