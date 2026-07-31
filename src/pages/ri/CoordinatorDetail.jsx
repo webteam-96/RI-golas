@@ -116,7 +116,7 @@ export default function CoordinatorDetail() {
         format={dishaNumber}
         title={`${c.name} — districts`}
         sub={`${PREVIOUS_YEAR} figures against ${GOALS_YEAR} targets`}
-        totalLabel="Supported"
+        totalLabel="Total"
       />
 
       <div className="mt-5">

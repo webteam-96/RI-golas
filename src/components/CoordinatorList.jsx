@@ -134,7 +134,7 @@ export default function CoordinatorList() {
                     format={dishaNumber}
                     title={`${c.name} — districts`}
                     sub={`${districts.length} supported · achieved over target`}
-                    totalLabel="Supported"
+                    totalLabel="Total"
                   />
                 </div>
               )}
