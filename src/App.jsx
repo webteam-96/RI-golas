@@ -3,6 +3,7 @@ import { GoalsProvider } from '@/context/GoalsProvider'
 import { RiLayout, ZoneLayout, DistrictLayout, ClubLayout } from '@/layouts/Layouts'
 
 import RiOverview from '@/pages/ri/Overview'
+import RiCoordinators from '@/pages/ri/Coordinators'
 import RiGoals from '@/pages/ri/Goals'
 
 import ZoneOverview from '@/pages/zone/Overview'
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/ri" element={<RiLayout />}>
             <Route index element={<Navigate to="/ri/overview" replace />} />
             <Route path="overview" element={<RiOverview />} />
+            <Route path="coordinators" element={<RiCoordinators />} />
             <Route path="zones" element={<Navigate to="/ri/overview" replace />} />
             <Route path="goals" element={<RiGoals />} />
           </Route>

@@ -64,15 +64,13 @@ export default function RiOverview() {
         })}
       </div>
 
-      <GoalDashboard scope="ri" scopeId="ri" childScope="district" items={items} itemsTitle="Districts" />
-
-      {/* Who is accountable for what */}
+      {/* Who is accountable for what — sits directly under the counts */}
       <Card
-        className="mt-6"
+        className="mb-6"
         title="Foundation Coordinators"
         sub={`1 RRFC and ${ZONE.coordinators.length} ARRFCs across ${DISTRICTS.length} districts`}
         right={
-          <Link to="/zone/coordinators"
+          <Link to="/ri/coordinators"
                 className="text-[12px] font-semibold text-royal hover:underline whitespace-nowrap">
             Full view →
           </Link>
@@ -138,6 +136,8 @@ export default function RiOverview() {
           elsewhere count it once.
         </p>
       </Card>
+
+      <GoalDashboard scope="ri" scopeId="ri" childScope="district" items={items} itemsTitle="Districts" />
 
       <div className="mt-5 space-y-2">
         <DataNote>
