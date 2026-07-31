@@ -3,10 +3,14 @@ import { Link } from 'react-router-dom'
 import { ChevronRight, ChevronDown, Star, ArrowRight } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG, DISTRICTS } from '@/data/zone6'
 import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
-import { HEADLINE, shortLabel } from '@/data/headline'
+import { AREAS, areaLead, shortLabel } from '@/data/headline'
 import { actualFor, coordinatorTotal, zoneTotal, clubsIn } from '@/lib/rollup'
-import { fmt, usdExact, num } from '@/lib/format'
+import { fmt } from '@/lib/format'
 import { Kpi, DataNote } from './Bits'
+
+// The same four areas the rest of the app is organised around. Their lead metric stands in
+// for the area here — the full Foundation breakdown lives on the Foundation grid.
+const AREA_LEADS = AREAS.map((a) => ({ area: a, m: areaLead(a.id) }))
 
 /**
  * Coordinator name → the districts they support → that district's data, expanded in place.
@@ -40,11 +44,13 @@ export default function CoordinatorList() {
         </div>
       </div>
 
-      {/* The figure the RRFC is accountable for — same counter as every other page */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-6">
-        {HEADLINE.map((m) => (
-          <Kpi key={m.id} label={shortLabel(m)} value={fmt(zoneTotal(m.id), m.unit)}
-               tone={m.id === 'annualFund' ? 'gold' : 'royal'} />
+      {/* The figures the RRFC is accountable for — same four areas, same counter as every page */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        {AREA_LEADS.map(({ area, m }) => (
+          <Kpi key={area.id} label={area.label} sub={shortLabel(m)}
+               value={fmt(zoneTotal(m.id), m.unit)}
+               tone={area.id === 'foundation' ? 'gold' : area.id === 'membership' ? 'blue'
+                     : area.id === 'publicimage' ? 'purple' : 'green'} />
         ))}
       </div>
 
@@ -73,9 +79,10 @@ export default function CoordinatorList() {
                   </div>
                 </div>
                 <div className="flex gap-5 text-right flex-shrink-0">
-                  <Metric label="Annual Fund" value={usdExact(coordinatorTotal('annualFund', c))} />
-                  <Metric label="PHF" value={num(coordinatorTotal('phf', c))} />
-                  <Metric label="Major Donors" value={num(coordinatorTotal('majorDonors', c))} />
+                  {AREA_LEADS.map(({ area, m }) => (
+                    <Metric key={area.id} label={area.label}
+                            value={fmt(coordinatorTotal(m.id, c), m.unit)} />
+                  ))}
                 </div>
               </button>
 
@@ -86,8 +93,8 @@ export default function CoordinatorList() {
                       <thead>
                         <tr className="eyebrow text-slate-400 border-b border-slate-200">
                           <th className="text-left font-medium pb-2">District</th>
-                          {HEADLINE.map((m) => (
-                            <th key={m.id} className="text-right font-medium pb-2 px-2">{shortLabel(m)}</th>
+                          {AREA_LEADS.map(({ area }) => (
+                            <th key={area.id} className="text-right font-medium pb-2 px-2">{area.label}</th>
                           ))}
                           <th className="text-right font-medium pb-2 pl-2">Clubs</th>
                           <th className="w-8" />
@@ -110,8 +117,8 @@ export default function CoordinatorList() {
                                   </span>
                                 )}
                               </td>
-                              {HEADLINE.map((m) => (
-                                <td key={m.id} className="py-2.5 px-2 text-right tabular-nums text-slate-700">
+                              {AREA_LEADS.map(({ area, m }) => (
+                                <td key={area.id} className="py-2.5 px-2 text-right tabular-nums text-slate-700">
                                   {fmt(actualFor(m.id, 'district', d).value, m.unit)}
                                 </td>
                               ))}
