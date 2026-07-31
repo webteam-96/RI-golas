@@ -3,7 +3,7 @@ import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
 import { AREAS, areaLead, shortLabel } from '@/data/headline'
 import { actualFor, clubsIn } from '@/lib/rollup'
 import { fmt } from '@/lib/format'
-import { LevelBanner, StatPlate, DataNote } from '@/components/Bits'
+import { LevelBanner, Kpi, DataNote } from '@/components/Bits'
 import GoalDashboard from '@/components/GoalDashboard'
 
 export default function ZoneOverview() {
@@ -25,18 +25,18 @@ export default function ZoneOverview() {
         sub={`RRFC ${ZONE.rrfc.name} (D ${ZONE.rrfc.homeDistrict}) · ${ZONE.coordinators.length} ARRFCs · RY ${RY}, data as of ${DATA_AS_OF}`}
       />
 
-      <StatPlate
-        title={`${ZONE.name} total`}
-        sub={`RY ${RY} · data as of ${DATA_AS_OF}`}
-        items={[
-          { label: 'Districts', value: DISTRICTS.length },
-          { label: 'Clubs', value: totalClubs, sub: 'rosters loaded' },
-          ...AREAS.map((a) => {
-            const m = areaLead(a.id)
-            return { label: a.label, value: fmt(actualFor(m.id, 'zone', ZONE.id).value, m.unit), sub: shortLabel(m) }
-          }),
-        ]}
-      />
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
+        <Kpi label="Districts" value={DISTRICTS.length} tone="slate" />
+        <Kpi label="Clubs" value={totalClubs} tone="slate" sub="rosters loaded" />
+        {AREAS.map((a) => {
+          const m = areaLead(a.id)
+          return (
+            <Kpi key={a.id} label={a.label} sub={shortLabel(m)}
+                 value={fmt(actualFor(m.id, 'zone', ZONE.id).value, m.unit)}
+                 tone={a.id === 'foundation' ? 'gold' : a.id === 'membership' ? 'blue' : a.id === 'publicimage' ? 'purple' : 'green'} />
+          )
+        })}
+      </div>
 
       <GoalDashboard scope="zone" scopeId={ZONE.id} childScope="district" items={items} itemsTitle="Districts" />
 

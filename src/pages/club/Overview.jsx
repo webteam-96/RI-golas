@@ -6,7 +6,7 @@ import { AREAS, areaLeadFor, shortLabel } from '@/data/headline'
 import { CLUB_METRICS } from '@/data/metrics'
 import { actualFor } from '@/lib/rollup'
 import { fmt, usdExact, num, pct } from '@/lib/format'
-import { LevelBanner, StatPlate, Card, Bar } from '@/components/Bits'
+import { LevelBanner, Kpi, Card, Bar } from '@/components/Bits'
 import GoalDashboard from '@/components/GoalDashboard'
 
 // Metrics worth comparing a club against the levels above it.
@@ -32,18 +32,18 @@ export default function ClubOverview() {
         }
       />
 
-      <StatPlate
-        title={`${club.name} total`}
-        sub={`District ${club.districtId} · ${ZONE.name}`}
-        columns="lg:grid-cols-5"
-        items={[
-          { label: 'Members', value: num(club.membership.current), sub: `${net > 0 ? '+' : ''}${net} this year` },
-          ...AREAS.map((a) => {
-            const m = areaLeadFor('club', a.id)
-            return { label: a.label, value: fmt(actualFor(m.id, 'club', clubId).value, m.unit), sub: shortLabel(m) }
-          }),
-        ]}
-      />
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
+        <Kpi label="Members" value={num(club.membership.current)} sub={`${net > 0 ? '+' : ''}${net} this year`}
+             tone={net > 0 ? 'green' : net < 0 ? 'rose' : 'blue'} />
+        {AREAS.map((a) => {
+          const m = areaLeadFor('club', a.id)
+          return (
+            <Kpi key={a.id} label={a.label} sub={shortLabel(m)}
+                 value={fmt(actualFor(m.id, 'club', clubId).value, m.unit)}
+                 tone={a.id === 'foundation' ? 'gold' : a.id === 'membership' ? 'blue' : a.id === 'publicimage' ? 'purple' : 'green'} />
+          )
+        })}
+      </div>
 
       <GoalDashboard scope="club" scopeId={clubId} />
 

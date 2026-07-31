@@ -6,7 +6,7 @@ import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
 import { HEADLINE, shortLabel } from '@/data/headline'
 import { actualFor, coordinatorTotal, zoneTotal, clubsIn } from '@/lib/rollup'
 import { fmt, usdExact, num } from '@/lib/format'
-import { Card, DataNote, StatPlate } from './Bits'
+import { Kpi, DataNote } from './Bits'
 
 /**
  * Coordinator name → the districts they support → that district's data, expanded in place.
@@ -40,13 +40,13 @@ export default function CoordinatorList() {
         </div>
       </div>
 
-      {/* The figure the RRFC is accountable for */}
-      <StatPlate
-        title={`${ZONE.name} total`}
-        sub={`${DISTRICTS.length} districts · each counted exactly once`}
-        columns="lg:grid-cols-7"
-        items={HEADLINE.map((m) => ({ label: shortLabel(m), value: fmt(zoneTotal(m.id), m.unit) }))}
-      />
+      {/* The figure the RRFC is accountable for — same counter as every other page */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3 mb-6">
+        {HEADLINE.map((m) => (
+          <Kpi key={m.id} label={shortLabel(m)} value={fmt(zoneTotal(m.id), m.unit)}
+               tone={m.id === 'annualFund' ? 'gold' : 'royal'} />
+        ))}
+      </div>
 
       <p className="eyebrow text-slate-400 mb-2.5 px-1">ARRFC — {ARRFC_ROLE_LONG}</p>
 

@@ -6,7 +6,7 @@ import { AREAS, areaLead, areaMetricsFor, shortLabel } from '@/data/headline'
 import { actualFor, clubsIn, achievement } from '@/lib/rollup'
 import { useGoals } from '@/context/GoalsProvider'
 import { fmt, pct } from '@/lib/format'
-import { LevelBanner, StatPlate, Card, Bar, DataNote } from '@/components/Bits'
+import { LevelBanner, Kpi, Card, Bar, DataNote } from '@/components/Bits'
 import GoalDashboard from '@/components/GoalDashboard'
 
 /** RI Director view. No zone layer — straight from the four goal areas to the districts. */
@@ -51,18 +51,18 @@ export default function RiOverview() {
         sub={`${DISTRICTS.length} districts · RY ${RY}, data as of ${DATA_AS_OF}`}
       />
 
-      <StatPlate
-        title="All districts"
-        sub={`RY ${RY} · data as of ${DATA_AS_OF}`}
-        items={[
-          { label: 'Districts', value: DISTRICTS.length },
-          { label: 'Clubs', value: totalClubs, sub: 'rosters loaded' },
-          ...AREAS.map((a) => {
-            const m = areaLead(a.id)
-            return { label: a.label, value: fmt(actualFor(m.id, 'ri', 'ri').value, m.unit), sub: shortLabel(m) }
-          }),
-        ]}
-      />
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
+        <Kpi label="Districts" value={DISTRICTS.length} tone="slate" />
+        <Kpi label="Clubs" value={totalClubs} tone="slate" sub="rosters loaded" />
+        {AREAS.map((a) => {
+          const m = areaLead(a.id)
+          return (
+            <Kpi key={a.id} label={a.label} sub={shortLabel(m)}
+                 value={fmt(actualFor(m.id, 'ri', 'ri').value, m.unit)}
+                 tone={a.id === 'foundation' ? 'gold' : a.id === 'membership' ? 'blue' : a.id === 'publicimage' ? 'purple' : 'green'} />
+          )
+        })}
+      </div>
 
       {/* Who is accountable for what — sits directly under the counts */}
       <Card
