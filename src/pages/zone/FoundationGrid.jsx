@@ -43,7 +43,7 @@ export default function FoundationGrid() {
                   </th>
                 ))}
                 <th className="text-right font-bold py-3 px-3 text-[11px] text-white w-[100px]" style={{ background: '#003DA5' }}>
-                  ZONE 6
+                  TOTAL
                 </th>
               </tr>
             </thead>

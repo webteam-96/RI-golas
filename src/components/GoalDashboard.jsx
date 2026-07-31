@@ -87,7 +87,6 @@ export default function GoalDashboard({ scope, scopeId, childScope, items = [], 
         target={(f, e) => read(columnScope, e.id, f.id).target}
         format={fmt}
         sub={hasItems ? `${items.length} ${itemsTitle.toLowerCase()} across` : 'This level only'}
-        totalLabel={hasItems ? itemsTitle : 'Total'}
       />
     </>
   )

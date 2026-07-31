@@ -49,7 +49,6 @@ export default function DistrictClubs() {
         entityHeading="Field"
         title={`District ${d.number} clubs`}
         sub={`${clubs.length} across · achieved over target`}
-        totalLabel="District"
       />
 
       <div className="mt-5">

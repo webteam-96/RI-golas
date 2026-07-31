@@ -68,7 +68,6 @@ export default function ClubOverview() {
         format={dishaNumber}
         title={club.name}
         sub={`${PREVIOUS_YEAR} figures against ${GOALS_YEAR} targets`}
-        totalLabel="Total"
       />
 
       <Card className="mt-5" title="Against the rest of the district"

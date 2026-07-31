@@ -149,7 +149,7 @@ export default function ZoneDistricts() {
             </tbody>
             <tfoot>
               <tr className="bg-slate-100 font-bold text-slate-800 border-t-2 border-slate-300">
-                <td className="py-3 pl-5 pr-2">ZONE 6</td>
+                <td className="py-3 pl-5 pr-2">TOTAL</td>
                 <td className="py-3 px-2 text-xs text-slate-500 font-normal">{DISTRICTS.length} districts</td>
                 {HEADLINE.map((m) => (
                   <td key={m.id} className="py-3 px-2 text-right tabular-nums">{fmt(zoneTotal(m.id), m.unit)}</td>

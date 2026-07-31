@@ -63,7 +63,6 @@ export default function DistrictOverview() {
         format={dishaNumber}
         title={`District ${d.number} in its zone`}
         sub={`${zoneDistricts.length} districts · this one marked ●`}
-        totalLabel="Zone"
       />
 
       <Card className="mt-5" title="Clubs" sub={clubs.length ? `${clubs.length} on file` : undefined}

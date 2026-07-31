@@ -29,7 +29,9 @@ export const pctTone = (pct, lowerIsBetter) => {
  */
 export default function GoalMatrix({
   categories, fields, entities, achieved, target, format,
-  title, sub, right, entityHeading = 'Field', totalLabel = 'All', footer,
+  // The right-hand column always reads Total. It holds the same thing at every level, so
+  // naming it after whatever is being summed only made it drift page to page.
+  title, sub, right, entityHeading = 'Field', totalLabel = 'Total', footer,
 }) {
   const [catId, setCatId] = useState(categories[0]?.id)
   const rows = fields(catId)
