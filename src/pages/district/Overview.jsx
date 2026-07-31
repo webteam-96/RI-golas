@@ -5,7 +5,7 @@ import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
 import { AREAS, areaLead, shortLabel } from '@/data/headline'
 import { actualFor, clubsIn } from '@/lib/rollup'
 import { fmt } from '@/lib/format'
-import { LevelBanner, Kpi, DataNote } from '@/components/Bits'
+import { LevelBanner, StatPlate, DataNote } from '@/components/Bits'
 import GoalDashboard from '@/components/GoalDashboard'
 
 export default function DistrictOverview() {
@@ -41,18 +41,18 @@ export default function DistrictOverview() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
-        <Kpi label="Clubs" value={clubs.length || '—'} tone="slate"
-             sub={clubs.length ? 'roster loaded' : 'not loaded'} />
-        {AREAS.map((a) => {
-          const m = areaLead(a.id)
-          return (
-            <Kpi key={a.id} label={a.label} sub={shortLabel(m)}
-                 value={fmt(actualFor(m.id, 'district', districtId).value, m.unit)}
-                 tone={a.id === 'foundation' ? 'gold' : a.id === 'membership' ? 'blue' : a.id === 'publicimage' ? 'purple' : 'green'} />
-          )
-        })}
-      </div>
+      <StatPlate
+        title={`District ${districtId} total`}
+        sub={arrfc.length ? `Supported by ${arrfc.map((c) => c.name).join(', ')}` : undefined}
+        columns="lg:grid-cols-5"
+        items={[
+          { label: 'Clubs', value: clubs.length || '—', sub: clubs.length ? 'roster loaded' : 'not loaded' },
+          ...AREAS.map((a) => {
+            const m = areaLead(a.id)
+            return { label: a.label, value: fmt(actualFor(m.id, 'district', districtId).value, m.unit), sub: shortLabel(m) }
+          }),
+        ]}
+      />
 
       {sub && (
         <div className="mb-5">

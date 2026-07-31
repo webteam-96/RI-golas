@@ -35,22 +35,40 @@ export function LevelBanner({ eyebrow, title, sub, right }) {
   )
 }
 
-const TONE = {
-  royal: 'text-royal', gold: 'text-[#B77A00]', green: 'text-[#00702A]',
-  purple: 'text-[#6D28D9]', slate: 'text-slate-500', rose: 'text-[#9B0C23]',
-  blue: 'text-royal',
-}
-
-export function Kpi({ label, value, sub, tone = 'royal' }) {
+/**
+ * The counter. One design used on every page — an engraved dark plate rather than a row of
+ * white tiles, so the headline figures read as one instrument and not as separate cards.
+ * `items` is [{ label, value, sub }].
+ */
+export function StatPlate({ title, sub, items = [], columns = 'lg:grid-cols-6' }) {
   return (
-    <div className="group bg-white rounded-xl border border-slate-200/80 px-4 py-3.5 transition-all
-                    hover:border-slate-300 hover:shadow-sm">
-      <p className="eyebrow text-slate-400">{label}</p>
-      <p className={`font-display text-[1.6rem] font-bold leading-tight mt-1.5 tabular-nums ${TONE[tone] ?? TONE.royal}`}>
-        {value}
-      </p>
-      {sub && <p className="text-[11px] text-slate-400 mt-0.5">{sub}</p>}
-    </div>
+    <section className="rounded-2xl bg-ink text-white mb-6 overflow-hidden shadow-[0_2px_10px_rgba(10,26,51,0.18)]">
+      {(title || sub) && (
+        <>
+          <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-4 pb-3">
+            {title && (
+              <h3 className="font-display text-[15px] font-semibold flex items-center gap-2.5">
+                <span className="h-[3px] w-6 rounded-full bg-gold" />
+                {title}
+              </h3>
+            )}
+            {sub && <p className="text-[11px] text-slate-400">{sub}</p>}
+          </div>
+          <div className="h-px bg-white/10 mx-5" />
+        </>
+      )}
+      <dl className={`grid grid-cols-2 sm:grid-cols-3 ${columns} gap-x-6 gap-y-5 px-5 py-5`}>
+        {items.map((it) => (
+          <div key={it.label}>
+            <dt className="eyebrow text-slate-400">{it.label}</dt>
+            <dd className="font-display text-[1.4rem] font-bold tabular-nums text-white mt-1.5 leading-none">
+              {it.value}
+            </dd>
+            {it.sub && <p className="text-[11px] text-slate-500 mt-1">{it.sub}</p>}
+          </div>
+        ))}
+      </dl>
+    </section>
   )
 }
 

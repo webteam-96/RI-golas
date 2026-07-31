@@ -6,7 +6,7 @@ import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
 import { HEADLINE, shortLabel } from '@/data/headline'
 import { actualFor, coordinatorTotal, zoneTotal, clubsIn } from '@/lib/rollup'
 import { fmt, usdExact, num } from '@/lib/format'
-import { Card, DataNote } from './Bits'
+import { Card, DataNote, StatPlate } from './Bits'
 
 /**
  * Coordinator name → the districts they support → that district's data, expanded in place.
@@ -21,53 +21,32 @@ export default function CoordinatorList() {
       <div className="rounded-2xl p-5 mb-6 bg-white border border-gold/40 shadow-[0_1px_2px_rgba(10,26,51,0.04)]
                       relative overflow-hidden">
         <span className="absolute left-0 top-0 bottom-0 w-1 bg-gold" />
-        <div className="flex flex-wrap items-start justify-between gap-4 pl-2">
-          <div className="flex items-start gap-3.5">
-            <span className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gold">
-              <Star size={19} className="text-ink" fill="#0A1A33" />
-            </span>
-            <div>
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="eyebrow px-2 py-0.5 rounded bg-royal text-white">RRFC</span>
-                <h2 className="font-display text-[1.3rem] font-bold text-ink leading-none">{ZONE.rrfc.name}</h2>
-              </div>
-              <p className="text-[12px] text-slate-500 mt-1.5">
-                {ZONE.rrfc.roleLong} · home district <strong className="text-slate-700">{ZONE.rrfc.homeDistrict}</strong> ·
-                responsible for all {DISTRICTS.length} districts
-              </p>
+        {/* No figures here — the RRFC covers the whole zone, and the zone total sits
+            directly below. Repeating it on the card would say the same thing twice. */}
+        <div className="flex items-start gap-3.5 pl-2">
+          <span className="h-11 w-11 rounded-xl flex items-center justify-center flex-shrink-0 bg-gold">
+            <Star size={19} className="text-ink" fill="#0A1A33" />
+          </span>
+          <div>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="eyebrow px-2 py-0.5 rounded bg-royal text-white">RRFC</span>
+              <h2 className="font-display text-[1.3rem] font-bold text-ink leading-none">{ZONE.rrfc.name}</h2>
             </div>
-          </div>
-          <div className="flex gap-6 text-right">
-            <Metric label="Annual Fund" value={usdExact(zoneTotal('annualFund'))} />
-            <Metric label="PHF" value={num(zoneTotal('phf'))} />
-            <Metric label="Major Donors" value={num(zoneTotal('majorDonors'))} />
+            <p className="text-[12px] text-slate-500 mt-1.5">
+              {ZONE.rrfc.roleLong} · home district <strong className="text-slate-700">{ZONE.rrfc.homeDistrict}</strong> ·
+              responsible for all {DISTRICTS.length} districts
+            </p>
           </div>
         </div>
       </div>
 
-      {/* The figure the RRFC is accountable for, read as one plate */}
-      <section className="rounded-2xl bg-ink text-white mb-7 overflow-hidden shadow-[0_2px_10px_rgba(10,26,51,0.18)]">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 px-5 pt-4 pb-3">
-          <h3 className="font-display text-[15px] font-semibold flex items-center gap-2.5">
-            <span className="h-[3px] w-6 rounded-full bg-gold" />
-            {ZONE.name} total
-          </h3>
-          <p className="text-[11px] text-slate-400">
-            {DISTRICTS.length} districts · each counted exactly once
-          </p>
-        </div>
-        <div className="h-px bg-white/10 mx-5" />
-        <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-6 gap-y-5 px-5 py-5">
-          {HEADLINE.map((m) => (
-            <div key={m.id}>
-              <dt className="eyebrow text-slate-400">{shortLabel(m)}</dt>
-              <dd className="font-display text-[1.4rem] font-bold tabular-nums text-white mt-1.5 leading-none">
-                {fmt(zoneTotal(m.id), m.unit)}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
+      {/* The figure the RRFC is accountable for */}
+      <StatPlate
+        title={`${ZONE.name} total`}
+        sub={`${DISTRICTS.length} districts · each counted exactly once`}
+        columns="lg:grid-cols-7"
+        items={HEADLINE.map((m) => ({ label: shortLabel(m), value: fmt(zoneTotal(m.id), m.unit) }))}
+      />
 
       <p className="eyebrow text-slate-400 mb-2.5 px-1">ARRFC — {ARRFC_ROLE_LONG}</p>
 
