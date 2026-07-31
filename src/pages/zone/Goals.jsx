@@ -1,5 +1,5 @@
 import { ZONE, DISTRICTS } from '@/data/zone6'
-import { metricsFor } from '@/data/metrics'
+import { FOUNDATION } from '@/data/metrics'
 import { LevelBanner, DataNote } from '@/components/Bits'
 import GoalTable from '@/components/GoalTable'
 
@@ -9,7 +9,7 @@ export default function ZoneGoals() {
       <LevelBanner
         eyebrow={`Zone ${ZONE.number} · goal entry`}
         title="Zone Targets"
-        sub="Foundation, Membership, Public Image and Projects. District pages show these alongside their own."
+        sub="Set the zone target for each Foundation metric. District pages show these alongside their own."
       />
 
       <div className="mb-4">
@@ -23,7 +23,7 @@ export default function ZoneGoals() {
       <GoalTable
         scope="zone"
         scopeId={ZONE.id}
-        metrics={metricsFor('zone')}
+        metrics={FOUNDATION}
         childScope="district"
         childIds={DISTRICTS.map((d) => d.id)}
         childLabel="District commitment"
