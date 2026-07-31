@@ -26,6 +26,22 @@ export function RiLayout() {
   )
 }
 
+export function AdminLayout() {
+  const nav = [
+    { to: '/admin', label: 'Consolidated Goals' },
+    { to: '/admin/districts', label: 'Districts' },
+  ]
+  return (
+    <Shell
+      nav={nav}
+      titles={{ '/admin': 'Consolidated Goals', '/admin/districts': 'Districts' }}
+      fallbackTitle="Goal Setting"
+      chip="GS" name="Zones 4 & 7" role="Goal setting 2026-27"
+      crumbs={[{ label: 'Zones 4 & 7' }]}
+    />
+  )
+}
+
 export function ZoneLayout() {
   const nav = [
     { to: '/zone/overview', label: 'Overview' },

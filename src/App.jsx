@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { GoalsProvider } from '@/context/GoalsProvider'
-import { RiLayout, ZoneLayout, DistrictLayout, ClubLayout } from '@/layouts/Layouts'
+import { RiLayout, ZoneLayout, DistrictLayout, ClubLayout, AdminLayout } from '@/layouts/Layouts'
+import AdminDashboard from '@/pages/admin/Dashboard'
+import AdminDistricts from '@/pages/admin/Districts'
 
 import RiOverview from '@/pages/ri/Overview'
 import RiCoordinators from '@/pages/ri/Coordinators'
@@ -25,7 +27,13 @@ export default function App() {
     <GoalsProvider>
       <BrowserRouter>
         <Routes>
-          <Route index element={<Navigate to="/ri/overview" replace />} />
+          <Route index element={<Navigate to="/admin" replace />} />
+
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="districts" element={<AdminDistricts />} />
+          </Route>
+
 
           <Route path="/ri" element={<RiLayout />}>
             <Route index element={<Navigate to="/ri/overview" replace />} />
