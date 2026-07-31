@@ -68,68 +68,6 @@ export default function AdminDashboard() {
         <Kpi label="Reporting period" value={PREVIOUS_YEAR} tone="slate" sub={`targets for ${GOALS_YEAR}`} />
       </div>
 
-      {/* Who is accountable — directly under the counter */}
-      <Card
-        className="mb-6"
-        title="Foundation Coordinators"
-        sub={`Zone 6 · 1 RRFC and ${ZONE.coordinators.length} ARRFCs · ${ARRFC_ROLE_LONG}`}
-        right={
-          <Link to="/ri/coordinators"
-                className="text-[12px] font-semibold text-royal hover:underline whitespace-nowrap">
-            Full view →
-          </Link>
-        }
-      >
-        <div className="overflow-x-auto -mx-5">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="eyebrow text-slate-400 border-b border-slate-200">
-                <th className="text-left font-medium pb-2.5 pl-5">Coordinator</th>
-                <th className="text-left font-medium pb-2.5 px-3">Role</th>
-                <th className="text-left font-medium pb-2.5 px-3">Districts supported</th>
-                <th className="text-left font-medium pb-2.5 px-3 w-44">Attainment</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {coordinators.map((c) => (
-                <tr key={c.id} className={`hover:bg-slate-50/70 ${c.lead ? 'bg-gold/[0.05]' : ''}`}>
-                  <td className="py-3 pl-5">
-                    <span className="flex items-center gap-2">
-                      {c.lead && <Star size={13} className="text-gold flex-shrink-0" fill="#F7A81B" />}
-                      <span className="font-semibold text-ink">{c.name}</span>
-                    </span>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Home D{c.homeDistrict}</p>
-                  </td>
-                  <td className="py-3 px-3">
-                    <span className={`eyebrow px-2 py-0.5 rounded ${
-                      c.lead ? 'bg-royal text-white' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {c.role}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 font-data text-[12px] text-slate-600">
-                    {c.lead ? `all ${ZONE6.length}` : c.supports.join(' · ')}
-                  </td>
-                  <td className="py-3 px-3">
-                    <div className="flex items-center gap-2">
-                      <span className="flex-1 min-w-[70px]"><Bar value={c.score ?? 0} max={100} /></span>
-                      <span className="w-11 text-right font-data text-[12px] font-semibold text-ink">
-                        {c.score == null ? '—' : `${c.score.toFixed(0)}%`}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[11px] text-slate-400 mt-3 leading-relaxed">
-          Attainment is the mean of the districts a coordinator supports, each counted once — goals are
-          set per district and a coordinator answers for each equally. D{ZONE.rrfc.homeDistrict} sits
-          under both the RRFC and ARRFC Jhunjhunuwala; zone totals elsewhere still count it once.
-        </p>
-      </Card>
-
       {/* Achievement — the wheel fills as districts close on their targets */}
       <div className="rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_2px_rgba(10,26,51,0.04)] p-5 sm:p-6 mb-6">
         <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8">
@@ -190,6 +128,9 @@ export default function AdminDashboard() {
         }
       />
 
+      {/* Who is accountable — read after the districts they answer for */}
+      <CoordinatorsCard coordinators={coordinators} />
+
       <div className="mt-5 space-y-2">
         <DataNote>
           <strong>Targets are placeholders</strong> — the portal holds none, District Governors set them
@@ -204,6 +145,74 @@ export default function AdminDashboard() {
         </DataNote>
       </div>
     </>
+  )
+}
+
+/** The Zone 6 Foundation team. Names link through to that coordinator's own view. */
+function CoordinatorsCard({ coordinators }) {
+  return (
+    <Card
+      className="mt-6"
+      title="Foundation Coordinators"
+      sub={`${ZONE.name} · 1 RRFC and ${ZONE.coordinators.length} ARRFCs · ${ARRFC_ROLE_LONG}`}
+      right={
+        <Link to="/ri/coordinators"
+              className="text-[12px] font-semibold text-royal hover:underline whitespace-nowrap">
+          Full view →
+        </Link>
+      }
+    >
+      <div className="overflow-x-auto -mx-5">
+        <table className="w-full text-[13px]">
+          <thead>
+            <tr className="eyebrow text-slate-400 border-b border-slate-200">
+              <th className="text-left font-medium pb-2.5 pl-5">Coordinator</th>
+              <th className="text-left font-medium pb-2.5 px-3">Role</th>
+              <th className="text-left font-medium pb-2.5 px-3">Districts supported</th>
+              <th className="text-left font-medium pb-2.5 px-3 w-44">Attainment</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {coordinators.map((c) => (
+              <tr key={c.id} className={`hover:bg-slate-50/70 ${c.lead ? 'bg-gold/[0.05]' : ''}`}>
+                <td className="py-3 pl-5">
+                  <span className="flex items-center gap-2">
+                    {c.lead && <Star size={13} className="text-gold flex-shrink-0" fill="#F7A81B" />}
+                    <Link to={`/ri/coordinators/${c.id}`} className="font-semibold text-royal hover:underline">
+                      {c.name}
+                    </Link>
+                  </span>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Home D{c.homeDistrict}</p>
+                </td>
+                <td className="py-3 px-3">
+                  <span className={`eyebrow px-2 py-0.5 rounded ${
+                    c.lead ? 'bg-royal text-white' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {c.role}
+                  </span>
+                </td>
+                <td className="py-3 px-3 font-data text-[12px] text-slate-600">
+                  {c.lead ? `all ${ZONE6.length}` : c.supports.join(' · ')}
+                </td>
+                <td className="py-3 px-3">
+                  <div className="flex items-center gap-2">
+                    <span className="flex-1 min-w-[70px]"><Bar value={c.score ?? 0} max={100} /></span>
+                    <span className="w-11 text-right font-data text-[12px] font-semibold text-ink">
+                      {c.score == null ? '—' : `${c.score.toFixed(0)}%`}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-[11px] text-slate-400 mt-3 leading-relaxed">
+        Attainment is the mean of the districts a coordinator supports, each counted once — goals are
+        set per district and a coordinator answers for each equally. D{ZONE.rrfc.homeDistrict} sits
+        under both the RRFC and ARRFC Jhunjhunuwala; zone totals elsewhere still count it once.
+      </p>
+    </Card>
   )
 }
 

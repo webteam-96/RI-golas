@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ChevronRight, ChevronDown, Star } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
 import { DISHA_DISTRICTS, districtsIn } from '@/data/disha'
@@ -87,22 +88,27 @@ export default function CoordinatorList() {
             <div key={c.id} className={`bg-white rounded-2xl border overflow-hidden transition-all ${
                    isOpen ? 'border-royal/30 shadow-[0_2px_8px_rgba(0,61,165,0.07)]' : 'border-slate-200/80'
                  }`}>
-              <button
-                onClick={() => setOpen(isOpen ? null : c.id)}
-                className="w-full flex flex-wrap items-center justify-between gap-4 px-5 py-4 text-left hover:bg-slate-50/70 transition-colors"
-              >
+              <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4 hover:bg-slate-50/70 transition-colors">
                 <div className="flex items-start gap-3 min-w-0">
-                  {isOpen ? <ChevronDown size={17} className="text-royal mt-1 flex-shrink-0" />
-                          : <ChevronRight size={17} className="text-slate-300 mt-1 flex-shrink-0" />}
+                  <button onClick={() => setOpen(isOpen ? null : c.id)}
+                          title={isOpen ? 'Collapse' : 'Expand districts'}
+                          className="mt-1 flex-shrink-0">
+                    {isOpen ? <ChevronDown size={17} className="text-royal" />
+                            : <ChevronRight size={17} className="text-slate-300 hover:text-slate-500" />}
+                  </button>
                   <div className="min-w-0">
-                    <h3 className="font-display font-semibold text-ink text-[15px] sm:text-[17px] leading-tight">{c.name}</h3>
+                    <Link to={`/ri/coordinators/${c.id}`}
+                          className="font-display font-semibold text-ink hover:text-royal hover:underline text-[15px] sm:text-[17px] leading-tight">
+                      {c.name}
+                    </Link>
                     <p className="text-[12px] text-slate-500 mt-1">
                       Home D{c.homeDistrict} · Supporting{' '}
                       <strong className="font-data text-slate-700 font-medium">{c.supports.join(' · ')}</strong>
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-5 text-right flex-shrink-0">
+                <button onClick={() => setOpen(isOpen ? null : c.id)}
+                        className="flex gap-5 text-right flex-shrink-0">
                   {REPORT_CATEGORIES.slice(0, 3).map((cat) => {
                     const f = leadField(cat.id)
                     return (
@@ -114,8 +120,8 @@ export default function CoordinatorList() {
                       </div>
                     )
                   })}
-                </div>
-              </button>
+                </button>
+              </div>
 
               {isOpen && (
                 <div className="border-t border-slate-100 px-5 py-4 bg-slate-50/60">

@@ -6,6 +6,7 @@ import AllDistricts from '@/pages/admin/Districts'
 import DistrictDetail from '@/pages/admin/DistrictDetail'
 
 import RiCoordinators from '@/pages/ri/Coordinators'
+import CoordinatorDetail from '@/pages/ri/CoordinatorDetail'
 
 import ZoneOverview from '@/pages/zone/Overview'
 import Coordinators from '@/pages/zone/Coordinators'
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="districts" element={<AllDistricts />} />
             <Route path="districts/:districtId" element={<DistrictDetail />} />
             <Route path="coordinators" element={<RiCoordinators />} />
+            <Route path="coordinators/:coordinatorId" element={<CoordinatorDetail />} />
             <Route path="consolidated" element={<Navigate to="/ri/overview" replace />} />
             <Route path="zones" element={<Navigate to="/ri/overview" replace />} />
             <Route path="goals" element={<Navigate to="/ri/overview" replace />} />
