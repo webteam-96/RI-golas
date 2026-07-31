@@ -26,24 +26,22 @@ export default function App() {
     <GoalsProvider>
       <BrowserRouter>
         <Routes>
-          <Route index element={<Navigate to="/ri/consolidated" replace />} />
+          <Route index element={<Navigate to="/ri/overview" replace />} />
 
           {/* The admin surface moved under the RI Director, who is the administrator. */}
-          <Route path="/admin" element={<Navigate to="/ri/consolidated" replace />} />
+          <Route path="/admin" element={<Navigate to="/ri/overview" replace />} />
           <Route path="/admin/districts" element={<Navigate to="/ri/districts" replace />} />
 
 
           <Route path="/ri" element={<RiLayout />}>
-            <Route index element={<Navigate to="/ri/consolidated" replace />} />
-            <Route path="consolidated" element={<ConsolidatedGoals />} />
+            <Route index element={<Navigate to="/ri/overview" replace />} />
+            <Route path="overview" element={<ConsolidatedGoals />} />
             <Route path="districts" element={<AllDistricts />} />
             <Route path="districts/:districtId" element={<DistrictDetail />} />
             <Route path="coordinators" element={<RiCoordinators />} />
-            {/* Retired from the RI Director: both ran on the Zone 6 dataset and disagreed
-                with the consolidated view. They remain under the Zone role. */}
-            <Route path="overview" element={<Navigate to="/ri/consolidated" replace />} />
-            <Route path="zones" element={<Navigate to="/ri/consolidated" replace />} />
-            <Route path="goals" element={<Navigate to="/ri/consolidated" replace />} />
+            <Route path="consolidated" element={<Navigate to="/ri/overview" replace />} />
+            <Route path="zones" element={<Navigate to="/ri/overview" replace />} />
+            <Route path="goals" element={<Navigate to="/ri/overview" replace />} />
           </Route>
 
           <Route path="/zone" element={<ZoneLayout />}>

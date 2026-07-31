@@ -7,6 +7,7 @@ import {
 import { completion, coverage, sections, dishaNumber, totalFor, TARGET_FIELDS } from './disha.js'
 import { targetValue, DEMO_TARGETS } from '../data/dishaTargets.js'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '../data/reportFields.js'
+import { ZONE } from '../data/zone6.js'
 
 let n = 0
 const check = (name, fn) => { fn(); n++; console.log('  ok  ' + name) }
@@ -120,6 +121,23 @@ check('the report sections match the PDF, and RAG / Summary are gone', () => {
   const names = REPORT_FIELDS.map((f) => f.label.toLowerCase()).join(' ')
   assert.ok(!names.includes('rag'), 'RAG Analysis must not appear')
   assert.ok(!/\bamber\b|\bsuper green\b/.test(names), 'RAG bands must not appear')
+})
+
+// The coordinators page maps ARRFC assignments onto the real Zone 6 districts. A support
+// entry that names a district the dataset does not have would silently drop a column.
+check('every coordinator supports a district that exists in the data', () => {
+  const zone6 = districtsIn(2).map((d) => d.number)
+  for (const c of ZONE.coordinators)
+    for (const n of c.supports)
+      assert.ok(zone6.includes(n), `${c.name} supports ${n}, which is not a Zone 6 district`)
+  assert.ok(zone6.includes(ZONE.rrfc.homeDistrict))
+})
+
+check('the ARRFC assignments leave 3291 uncovered — surfaced, not hidden', () => {
+  const assigned = new Set(ZONE.coordinators.flatMap((c) => c.supports))
+  const uncovered = districtsIn(2).map((d) => d.number).filter((n) => !assigned.has(n))
+  assert.deepEqual(uncovered, ['3291'],
+    'if this changes, the note on the coordinators page needs updating')
 })
 
 check('Projects holds service projects alone; the rest moved to New Generation', () => {

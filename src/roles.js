@@ -3,7 +3,7 @@ import { ZONE } from '@/data/zone6'
 // The four levels. No Assistant Governor — the AG dashboard is a separate product surface
 // and is deliberately not part of this hierarchy.
 export const ROLES = [
-  { id: 'ri',       label: 'RI Director',       sub: 'Administrator · all zones', chip: 'RI', home: '/ri/consolidated' },
+  { id: 'ri',       label: 'RI Director',       sub: 'Administrator · all zones', chip: 'RI', home: '/ri/overview' },
   { id: 'zone',     label: 'Zone Coordinator',  sub: `${ZONE.name} · RRFC/ARRFC`, chip: 'Z6', home: '/zone/overview' },
   { id: 'district', label: 'District Governor', sub: 'District 3120',             chip: 'DG', home: '/district/3120/overview' },
   { id: 'club',     label: 'Club President',    sub: 'Rotary Club of Thane',      chip: 'TH', home: '/club/15766/overview' },

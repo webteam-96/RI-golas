@@ -10,7 +10,7 @@ export function RiLayout() {
   // One consolidated view, not two. The Zone 6 Overview ran on a different dataset and
   // disagreed with this one field for field; it still lives under the Zone role.
   const nav = [
-    { to: '/ri/consolidated', label: 'Consolidated Goals' },
+    { to: '/ri/overview', label: 'Overview' },
     { to: '/ri/districts', label: 'Districts' },
     { to: '/ri/coordinators', label: 'Coordinators' },
   ]
@@ -18,7 +18,7 @@ export function RiLayout() {
     <Shell
       nav={nav}
       titles={{
-        '/ri/consolidated': 'Consolidated Goals',
+        '/ri/overview': 'Overview',
         '/ri/districts': 'Districts',
         '/ri/coordinators': 'Foundation Coordinators',
       }}
