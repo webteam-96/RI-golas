@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ChevronRight, ChevronDown, Star, ArrowRight } from 'lucide-react'
+import { ChevronRight, ChevronDown, Star } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG, DISTRICTS } from '@/data/zone6'
-import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
-import { AREAS, areaLead, shortLabel } from '@/data/headline'
-import { actualFor, coordinatorTotal, zoneTotal, clubsIn } from '@/lib/rollup'
+import { AREAS, areaLead, areaMetricsFor, shortLabel } from '@/data/headline'
+import { coordinatorTotal, zoneTotal } from '@/lib/rollup'
+import { useGoals } from '@/context/GoalsProvider'
 import { fmt } from '@/lib/format'
 import { Kpi, DataNote } from './Bits'
+import GoalMatrix from './GoalMatrix'
 
 // The same four areas the rest of the app is organised around. Their lead metric stands in
 // for the area here — the full Foundation breakdown lives on the Foundation grid.
@@ -18,6 +18,7 @@ const AREA_LEADS = AREAS.map((a) => ({ area: a, m: areaLead(a.id) }))
  */
 export default function CoordinatorList() {
   const [open, setOpen] = useState(ZONE.coordinators[0].id)
+  const { read } = useGoals()
 
   return (
     <>
@@ -88,52 +89,20 @@ export default function CoordinatorList() {
 
               {isOpen && (
                 <div className="border-t border-slate-100 px-5 py-4 bg-slate-50/60">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[640px]">
-                      <thead>
-                        <tr className="eyebrow text-slate-400 border-b border-slate-200">
-                          <th className="text-left font-medium pb-2">District</th>
-                          {AREA_LEADS.map(({ area }) => (
-                            <th key={area.id} className="text-right font-medium pb-2 px-2">{area.label}</th>
-                          ))}
-                          <th className="text-right font-medium pb-2 pl-2">Clubs</th>
-                          <th className="w-8" />
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {c.supports.map((d) => {
-                          const sub = DISTRICT_DATA_SUBSTITUTIONS[d]
-                          const clubs = clubsIn(d).length
-                          return (
-                            <tr key={d} className="hover:bg-white transition-colors">
-                              <td className="py-2.5">
-                                <Link to={`/district/${d}/overview`} className="font-semibold text-royal hover:underline">
-                                  {d}
-                                </Link>
-                                {sub && (
-                                  <span className="ml-1.5 text-[9px] text-[#B85400] font-semibold"
-                                        title={`Figures sourced from column ${sub}`}>
-                                    ⓘ {sub}
-                                  </span>
-                                )}
-                              </td>
-                              {AREA_LEADS.map(({ area, m }) => (
-                                <td key={area.id} className="py-2.5 px-2 text-right tabular-nums text-slate-700">
-                                  {fmt(actualFor(m.id, 'district', d).value, m.unit)}
-                                </td>
-                              ))}
-                              <td className="py-2.5 pl-2 text-right tabular-nums text-slate-400">{clubs || '—'}</td>
-                              <td className="py-2.5 pl-1 text-right">
-                                <Link to={`/district/${d}/overview`} className="text-slate-300 hover:text-royal inline-block">
-                                  <ArrowRight size={15} />
-                                </Link>
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                  {/* Same matrix as every other page — this coordinator's districts across the top */}
+                  <GoalMatrix
+                    categories={AREAS.map((a) => ({ id: a.id, label: a.label }))}
+                    fields={(areaId) => areaMetricsFor('district', areaId).map((m) => ({
+                      id: m.id, label: m.label, unit: m.unit, lowerIsBetter: m.higherIsBetter === false,
+                    }))}
+                    entities={c.supports.map((d) => ({ id: d, label: d, to: `/district/${d}/overview` }))}
+                    achieved={(f, e) => read('district', e.id, f.id).actual}
+                    target={(f, e) => read('district', e.id, f.id).target}
+                    format={fmt}
+                    title={`${c.name} — districts`}
+                    sub={`${c.supports.length} supported · achieved over target`}
+                    totalLabel="Supported"
+                  />
                 </div>
               )}
             </div>

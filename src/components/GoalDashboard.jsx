@@ -1,32 +1,33 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
-import { AREAS, areaMetricsFor, areaLeadFor, AREA_COLOR, shortLabel } from '@/data/headline'
-import { actualFor, percentAchieved, goalStatus, onTrackYN, achievement } from '@/lib/rollup'
+import { AREAS, areaMetricsFor, AREA_COLOR } from '@/data/headline'
+import { achievement } from '@/lib/rollup'
 import { useGoals } from '@/context/GoalsProvider'
 import { fmt, pct } from '@/lib/format'
-import { Card, StatusPill, Bar, EmptyState } from './Bits'
+import { Bar } from './Bits'
 import WheelGauge from './WheelGauge'
+import GoalMatrix from './GoalMatrix'
 
 /**
- * The goal half of every dashboard: achievement summary, then all four areas expanded, then
- * the children ranked and scored. Written once and used by RI, Zone, District and Club so the
- * four areas cannot drift apart between levels. Nothing here is behind a click.
+ * The goal half of every dashboard: how much has been achieved, then the same matrix used
+ * everywhere else — the four areas' fields down the left, the level below across the top,
+ * achieved over target in each cell.
  *
- * `children` is the level below — districts for a zone, clubs for a district, none for a club.
+ * `items` is the level below: districts under RI or a zone, clubs under a district. A club has
+ * none, so it measures itself.
  */
-export default function GoalDashboard({ scope, scopeId, childScope, items = [], itemsTitle }) {
+export default function GoalDashboard({ scope, scopeId, childScope, items = [], itemsTitle = 'All' }) {
   const { read } = useGoals()
   const hasItems = items.length > 0
 
-  const scoreOf = (s, id, metrics) =>
-    achievement(metrics.map((m) => ({ ...read(s, id, m.id), higherIsBetter: m.higherIsBetter })))
+  // With no level below, the matrix compares the level against itself — one column, still the
+  // same shape, so a club page reads like every other page.
+  const columnScope = hasItems ? childScope : scope
+  const columns = hasItems ? items : [{ id: scopeId, label: 'This level' }]
 
-  const areaBlocks = AREAS.map((a) => {
-    const metrics = areaMetricsFor(scope, a.id)
-    return { a, metrics, lead: areaLeadFor(scope, a.id), score: scoreOf(scope, scopeId, metrics) }
-  })
-  const allMetrics = areaBlocks.flatMap((b) => b.metrics)
-  const overall = scoreOf(scope, scopeId, allMetrics)
+  const scoreOf = (metrics) =>
+    achievement(metrics.map((m) => ({ ...read(scope, scopeId, m.id), higherIsBetter: m.higherIsBetter })))
+
+  const areaBlocks = AREAS.map((a) => ({ a, score: scoreOf(areaMetricsFor(scope, a.id)) }))
+  const overall = scoreOf(AREAS.flatMap((a) => areaMetricsFor(scope, a.id)))
 
   return (
     <>
@@ -76,177 +77,18 @@ export default function GoalDashboard({ scope, scopeId, childScope, items = [], 
         </div>
       </div>
 
-      {/* All four areas, expanded */}
-      {areaBlocks.map(({ a, metrics, lead, score }) => {
-        const ranked = hasItems
-          ? items
-              .map((it) => ({ ...it, lead: actualFor(lead.id, childScope, it.id).value }))
-              .sort((x, y) => (y.lead ?? -1) - (x.lead ?? -1))
-          : []
-        const max = Math.max(...ranked.map((r) => r.lead ?? 0), 0)
-
-        return (
-          <div key={a.id} className="mb-6">
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3 pb-2.5 border-b border-slate-200/70">
-              <span className="h-[3px] w-8 rounded-full self-center" style={{ background: AREA_COLOR[a.id] }} />
-              <h2 className="font-display text-[1.15rem] font-semibold text-ink">{a.label}</h2>
-              <span className="font-data text-[13px] font-semibold" style={{ color: AREA_COLOR[a.id] }}>
-                {score.attainment == null ? '—' : `${pct(score.attainment)} achieved`}
-              </span>
-              <span className="text-[11px] text-slate-400">
-                {score.onTrack} of {score.total} goals on track
-                {score.achieved > 0 && ` · ${score.achieved} fully achieved`}
-              </span>
-            </div>
-
-            <div className={`grid grid-cols-1 gap-4 ${hasItems ? 'xl:grid-cols-2' : ''}`}>
-              <Card title="Goal Progress" sub="Target against the reported achievement">
-                <div className="overflow-x-auto -mx-5 px-5">
-                  <table className="w-full text-sm min-w-[520px]">
-                    <thead>
-                      <tr className="text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-200">
-                        <th className="text-left font-bold pb-2">Goal</th>
-                        <th className="text-right font-bold pb-2 px-3">Target</th>
-                        <th className="text-right font-bold pb-2 px-3">Achieved</th>
-                        <th className="text-right font-bold pb-2 px-3">%</th>
-                        <th className="text-left font-bold pb-2 px-3">Status</th>
-                        <th className="text-center font-bold pb-2">On&nbsp;Track</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {metrics.map((m) => {
-                        const g = read(scope, scopeId, m.id)
-                        const p = percentAchieved(g.target, g.actual, m.higherIsBetter !== false)
-                        const s = goalStatus(p)
-                        return (
-                          <tr key={m.id} className="hover:bg-slate-50/70">
-                            <td className="py-2.5 text-slate-700 font-medium">{m.label}</td>
-                            <td className="py-2.5 px-3 text-right tabular-nums text-slate-500">{fmt(g.target, m.unit)}</td>
-                            <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-slate-800">{fmt(g.actual, m.unit)}</td>
-                            <td className="py-2.5 px-3 text-right tabular-nums font-semibold">{p == null ? '—' : pct(p)}</td>
-                            <td className="py-2.5 px-3"><StatusPill status={s} /></td>
-                            <td className={`py-2.5 text-center font-bold text-xs ${p == null ? 'text-slate-300' : onTrackYN(s) === 'Y' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                              {p == null ? '—' : onTrackYN(s)}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
-
-              {hasItems && (
-                <Card title={`${shortLabel(lead)} by ${itemsTitle}`} sub="Highest first · click to drill in">
-                  <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
-                    {ranked.map((it) => (
-                      <Link
-                        key={it.id}
-                        to={it.to}
-                        className="flex items-center gap-3 px-2 py-1.5 rounded-lg hover:bg-slate-50 transition-colors group"
-                      >
-                        <span className="w-28 text-sm font-semibold text-slate-700 group-hover:text-[#003DA5] truncate"
-                              title={it.label}>
-                          {it.label}
-                          {it.note && (
-                            <span className="text-[9px] text-amber-600 font-semibold ml-0.5"
-                                  title={`Figures sourced from column ${it.note}`}>ⓘ</span>
-                          )}
-                        </span>
-                        <span className="flex-1"><Bar value={it.lead ?? 0} max={max} color={AREA_COLOR[a.id]} /></span>
-                        <span className="w-24 text-right text-sm font-bold tabular-nums text-slate-700">
-                          {fmt(it.lead, lead.unit)}
-                        </span>
-                        <ArrowRight size={13} className="text-slate-300 group-hover:text-[#003DA5]" />
-                      </Link>
-                    ))}
-                  </div>
-                </Card>
-              )}
-            </div>
-          </div>
-        )
-      })}
-
-      {/* Children across all four areas, each scored */}
-      {hasItems && (
-        <Card title={itemsTitle} sub={`All ${items.length} across the four goal areas`}>
-          <div className="overflow-x-auto -mx-5 px-5">
-            <table className="w-full text-sm min-w-[720px]">
-              <thead>
-                <tr className="text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-200">
-                  <th className="text-left font-bold pb-2">{itemsTitle.replace(/s$/, '')}</th>
-                  {AREAS.map((a) => (
-                    <th key={a.id} className="text-right font-bold pb-2 px-3">{a.label}</th>
-                  ))}
-                  <th className="text-left font-bold pb-2 px-3 w-40">Achieved</th>
-                  <th className="w-8" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {items.map((it) => {
-                  const score = scoreOf(childScope, it.id, allMetrics)
-                  return (
-                    <tr key={it.id} className="hover:bg-slate-50/70">
-                      <td className="py-2.5">
-                        <Link to={it.to} className="font-bold text-slate-800 hover:text-[#003DA5] hover:underline">
-                          {it.label}
-                        </Link>
-                        {it.sub && <p className="text-[11px] text-slate-400">{it.sub}</p>}
-                      </td>
-                      {AREAS.map((a) => {
-                        const m = areaLeadFor(childScope, a.id)
-                        return (
-                          <td key={a.id} className="py-2.5 px-3 text-right tabular-nums text-slate-700">
-                            {fmt(actualFor(m.id, childScope, it.id).value, m.unit)}
-                          </td>
-                        )
-                      })}
-                      <td className="py-2.5 px-3">
-                        <div className="flex items-center gap-2">
-                          <span className="flex-1 min-w-[70px]">
-                            <Bar value={score.attainment ?? 0} max={100} />
-                          </span>
-                          <span className="w-11 text-right text-xs font-bold tabular-nums text-slate-700">
-                            {score.attainment == null ? '—' : pct(score.attainment)}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          {score.onTrack} of {score.total} on track
-                        </p>
-                      </td>
-                      <td className="py-2.5 text-right">
-                        <Link to={it.to} className="text-slate-300 hover:text-[#003DA5] inline-block">
-                          <ArrowRight size={15} />
-                        </Link>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="bg-slate-50 font-bold text-slate-800 border-t-2 border-slate-200">
-                  <td className="py-3">TOTAL</td>
-                  {AREAS.map((a) => {
-                    const m = areaLeadFor(scope, a.id)
-                    return (
-                      <td key={a.id} className="py-3 px-3 text-right tabular-nums">
-                        {fmt(actualFor(m.id, scope, scopeId).value, m.unit)}
-                      </td>
-                    )
-                  })}
-                  <td className="py-3 px-3 text-right tabular-nums" style={{ color: '#003DA5' }}>
-                    {overall.attainment == null ? '—' : pct(overall.attainment)}
-                  </td>
-                  <td />
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </Card>
-      )}
-
-      {!hasItems && !allMetrics.length && <EmptyState>No goals defined at this level.</EmptyState>}
+      <GoalMatrix
+        categories={AREAS.map((a) => ({ id: a.id, label: a.label }))}
+        fields={(areaId) => areaMetricsFor(columnScope, areaId).map((m) => ({
+          id: m.id, label: m.label, unit: m.unit, lowerIsBetter: m.higherIsBetter === false,
+        }))}
+        entities={columns}
+        achieved={(f, e) => read(columnScope, e.id, f.id).actual}
+        target={(f, e) => read(columnScope, e.id, f.id).target}
+        format={fmt}
+        sub={hasItems ? `${items.length} ${itemsTitle.toLowerCase()} across` : 'This level only'}
+        totalLabel={hasItems ? itemsTitle : 'Total'}
+      />
     </>
   )
 }
