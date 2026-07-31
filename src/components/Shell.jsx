@@ -74,14 +74,14 @@ export default function Shell({ nav, titles, chip, name, role, crumbs, fallbackT
 
   return (
     <div className="flex h-screen overflow-hidden bg-ledger">
-      <aside className="hidden lg:flex flex-col w-[248px] flex-shrink-0 bg-ink">
+      <aside className="hidden lg:flex flex-col w-[248px] flex-shrink-0 bg-sidebar">
         <Sidebar />
       </aside>
 
       {open && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-ink/70 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <aside className="relative flex flex-col w-[248px] z-10 shadow-2xl bg-ink">
+          <aside className="relative flex flex-col w-[248px] z-10 shadow-2xl bg-sidebar">
             <button className="absolute top-4 right-3 text-slate-400 hover:text-white" onClick={() => setOpen(false)}>
               <X size={20} />
             </button>

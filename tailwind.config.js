@@ -19,6 +19,7 @@ export default {
         gold: '#F7A81B',
         azure: '#0067C8',
         ink: '#0A1A33',
+        sidebar: '#0F172A',   // kept as-is by request — the original sidebar ground
         ledger: '#F1F4FA',
         grass: '#009739',
         cranberry: '#C8102E',
