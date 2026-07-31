@@ -13,15 +13,15 @@ export default function DistrictGoals() {
     <>
       <LevelBanner
         eyebrow={`${ZONE.name} · goal entry`}
-        title={`District ${districtId} Targets`}
-        sub="Your targets, with the zone target beside them for context"
+        title={`District ${districtId} Goals`}
+        sub="Targets are fixed, with the zone target beside them for context"
       />
 
       <div className="mb-4">
         <DataNote tone="slate">
-          The <strong>Zone target</strong> column is read-only — it is what {ZONE.name} has committed to.
-          Nothing stops a district target sitting below its share of it; the gap is meant to be visible,
-          not blocked.
+          Both target columns are read-only — your own and what {ZONE.name} has committed to. Enter the
+          achieved figures; the gap between a district target and its share of the zone target is meant
+          to be visible, not blocked.
         </DataNote>
       </div>
 

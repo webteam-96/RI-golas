@@ -14,13 +14,14 @@ export default function ClubGoals() {
       <LevelBanner
         eyebrow={`${ZONE.name} · District ${club.districtId} · goal entry`}
         title={`Goals — ${club.name}`}
-        sub="Set your club's targets. Achieved figures come from reported data; override any of them if needed."
+        sub="Targets are set for you. Enter what your club has achieved against each one."
       />
 
       <div className="mb-4">
         <DataNote tone="slate">
-          Change a target and save — the District, Zone and RI views recompute immediately. An actual you
-          type over the reported figure is highlighted amber so it is never mistaken for source data.
+          The <strong>Target</strong> column is locked. Enter an achieved figure and save — the District,
+          Zone and RI views recompute immediately. Anything you type over the reported figure is
+          highlighted amber so it is never mistaken for source data.
         </DataNote>
       </div>
 

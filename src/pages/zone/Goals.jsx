@@ -8,8 +8,8 @@ export default function ZoneGoals() {
     <>
       <LevelBanner
         eyebrow={`Zone ${ZONE.number} · goal entry`}
-        title="Zone Targets"
-        sub="Set the zone target for each Foundation metric. District pages show these alongside their own."
+        title="Zone Goals"
+        sub="Targets are fixed. Enter what the zone has achieved against each one."
       />
 
       <div className="mb-4">

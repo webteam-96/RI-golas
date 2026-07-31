@@ -8,8 +8,8 @@ export default function RiGoals() {
     <>
       <LevelBanner
         eyebrow="RI Director Office · goal entry"
-        title="RI Targets"
-        sub="Foundation, Membership, Public Image and Projects — the same four areas at every level"
+        title="RI Goals"
+        sub="Targets are fixed. Foundation, Membership, Public Image and Projects — the same four areas at every level."
       />
 
       <div className="mb-4">
