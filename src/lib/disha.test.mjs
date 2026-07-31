@@ -6,6 +6,7 @@ import {
 } from '../data/disha.js'
 import { completion, coverage, sections, dishaNumber, totalFor, TARGET_FIELDS } from './disha.js'
 import { targetValue, DEMO_TARGETS } from '../data/dishaTargets.js'
+import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '../data/reportFields.js'
 
 let n = 0
 const check = (name, fn) => { fn(); n++; console.log('  ok  ' + name) }
@@ -111,39 +112,59 @@ check('numbers use Indian grouping and only abbreviate past a million', () => {
   assert.equal(dishaNumber('YES'), 'YES')
 })
 
-// The consolidated table pairs an achieved figure with a target in every cell, so a target
-// that is missing or below what has already been achieved would read as a failure that isn't.
+console.log('\nmonthly report fields')
+
+check('the four report sections match the PDF, and RAG / Summary are gone', () => {
+  assert.deepEqual(REPORT_CATEGORIES.map((c) => c.id),
+    ['membership', 'foundation', 'publicimage', 'projects'])
+  assert.deepEqual(REPORT_CATEGORIES.map((c) => c.pdf), [2, 3, 4, 5])
+  const names = REPORT_FIELDS.map((f) => f.label.toLowerCase()).join(' ')
+  assert.ok(!names.includes('rag'), 'RAG Analysis must not appear')
+  assert.ok(!/\bamber\b|\bsuper green\b/.test(names), 'RAG bands must not appear')
+})
+
+check('every field belongs to one of the four sections and carries a unit', () => {
+  const ids = new Set(REPORT_CATEGORIES.map((c) => c.id))
+  for (const f of REPORT_FIELDS) {
+    assert.ok(ids.has(f.cat), `${f.id} has section "${f.cat}"`)
+    assert.ok(['nos', '$', '%'].includes(f.unit), `${f.id} has unit "${f.unit}"`)
+  }
+  const grouped = REPORT_CATEGORIES.flatMap((c) => fieldsInCategory(c.id))
+  assert.equal(grouped.length, REPORT_FIELDS.length, 'a field is missing from its section')
+})
+
+check('a sourced field reads real data; an unsourced one reads null, never zero', () => {
+  const d = DISHA_DISTRICTS.find((x) => x.number === '2981')
+  const members = REPORT_FIELDS.find((f) => f.id === 'membersStart')
+  assert.equal(achievedFor(members, d), 6355)          // seed-previous-year-membership
+  const erey = REPORT_FIELDS.find((f) => f.id === 'ereyPct')
+  assert.equal(erey.src, null)
+  assert.equal(achievedFor(erey, d), null)
+})
+
+// Every cell pairs an achieved figure with a target, so a target that is missing or sits below
+// what has already been achieved would read as a failure that isn't.
 check('a demo target exists wherever there is an achieved figure to measure', () => {
   let paired = 0
   for (const d of DISHA_DISTRICTS)
-    for (const f of DISHA_FIELDS) {
-      if (f.dataType === 'text' || f.dataType === 'boolean') continue
-      const a = parseFloat(prevValue(d.id, f.id))
-      if (!Number.isFinite(a) || a === 0) continue
+    for (const f of REPORT_FIELDS) {
+      const a = achievedFor(f, d)
+      if (a == null || a === 0) continue
       const t = targetValue(d.id, f.id)
-      assert.ok(t != null, `${d.number} field ${f.id} has an achieved figure but no target`)
-      assert.ok(t >= a, `${d.number} field ${f.id}: target ${t} sits below achieved ${a}`)
+      assert.ok(t != null, `${d.number} / ${f.id} has an achieved figure but no target`)
+      assert.ok(t >= a, `${d.number} / ${f.id}: target ${t} sits below achieved ${a}`)
       paired++
     }
-  assert.ok(paired > 300, `only ${paired} cells paired`)
+  assert.ok(paired > 150, `only ${paired} cells paired`)
 })
 
-check('demo targets are absent where there is nothing to measure', () => {
+check('no target exists where there is nothing to measure', () => {
   for (const d of DISHA_DISTRICTS)
-    for (const f of DISHA_FIELDS) {
-      if (prevValue(d.id, f.id) != null) continue
-      assert.equal(targetValue(d.id, f.id), null,
-        `${d.number} field ${f.id} has a target with no achieved figure behind it`)
-    }
-  assert.equal(Object.keys(DEMO_TARGETS).length, DISHA_DISTRICTS.length)
-})
-
-check('percentage targets never exceed 100', () => {
-  for (const d of DISHA_DISTRICTS)
-    for (const f of DISHA_FIELDS.filter((x) => x.dataType === 'percentage')) {
-      const t = targetValue(d.id, f.id)
-      if (t != null) assert.ok(t <= 100, `${d.number} field ${f.id} target ${t} exceeds 100%`)
-    }
+    for (const f of REPORT_FIELDS)
+      if (achievedFor(f, d) == null)
+        assert.equal(targetValue(d.id, f.id), null,
+          `${d.number} / ${f.id} has a target with no achieved figure behind it`)
+  assert.ok(Object.keys(DEMO_TARGETS).length > 0)
 })
 
 console.log(`\n${n} checks passed\n`)

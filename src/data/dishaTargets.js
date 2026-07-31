@@ -1,64 +1,45 @@
-import { DISHA_FIELDS, DISHA_DISTRICTS, prevValue } from './disha.js'
+import { DISHA_DISTRICTS } from './disha.js'
+import { REPORT_FIELDS, achievedFor } from './reportFields.js'
 
 /**
  * DEMO TARGETS — not client data.
  *
- * The Disha56 seed carries no targets: District Governors enter them live at the goal-setting
- * event, which is the point of the event. Nothing to show against "achieved" until then, so
- * these are derived from each district's own existing figure by a per-section uplift.
+ * The portal seeds none: District Governors set targets live at the goal-setting event, which
+ * is the point of the event. Until then there is nothing to measure "achieved" against, so
+ * these are derived from each district's own figure by a per-field uplift.
  *
- * Every one is replaced the moment real targets arrive. They are flagged as demo wherever
- * they appear so nobody reads them as commitments anyone has made.
+ * They are flagged as placeholders on every page they appear, and live in this one file so a
+ * real target set replaces them in a single swap.
  */
 
-// Growth expected of each field, keyed by the section it sits in. A district asked to add
-// clubs is not being asked for the same stretch as one asked to lift women's membership.
+// What each field is being asked to grow by. Money stretches further than club counts.
 const UPLIFT = {
-  'New Clubs': 1.08,
-  'Women Membership': 1.15,
-  'RAG Analysis': 1.10,
-  Total: 1.07,
-  Summary: 1.07,
-  'Annual Fund (Last Five Years)': 1.20,
-  'Polio Plus Fund': 1.25,
-  'Endowment Fund': 1.15,
-  'Major Gifts': 1.20,
-  AKS: 1.10,
-  CSR: 1.20,
-  'Total Giving': 1.18,
-  Rotaract: 1.15,
-  Interact: 1.15,
-  RCC: 1.12,
-  'Yet to Sponsor': 1.10,
+  membersStart: 1.07, womenMembers: 1.15, clubsStart: 1.05,
+  annualFund: 1.20, polioPlus: 1.25, endowment: 1.15,
+  majorGifts: 1.20, aks: 1.10, csr: 1.20, totalGiving: 1.18,
+  rotaractClubs: 1.15, rotaractors: 1.20, interactClubs: 1.15, rccClubs: 1.12,
 }
 
-const numeric = (v) => {
-  const n = typeof v === 'string' ? parseFloat(v) : v
-  return typeof n === 'number' && Number.isFinite(n) ? n : null
-}
+const round = (n, unit) =>
+  unit === '%' ? Math.min(Math.round(n * 10) / 10, 100)
+  : n >= 1000 ? Math.round(n / 100) * 100
+  : Math.ceil(n)
 
 /** districtId -> fieldId -> target */
 export const DEMO_TARGETS = (() => {
   const out = {}
   for (const d of DISHA_DISTRICTS) {
-    for (const f of DISHA_FIELDS) {
-      if (f.dataType === 'text' || f.dataType === 'boolean') continue
-      const base = numeric(prevValue(d.id, f.id))
+    for (const f of REPORT_FIELDS) {
+      const base = achievedFor(f, d)
       if (base === null || base === 0) continue
-      const factor = UPLIFT[f.section] ?? 1.10
-      const raised = base * factor
-      // Percentages stay percentages; counts and currency round to something a person would say.
-      const target = f.dataType === 'percentage'
-        ? Math.min(Math.round(raised * 10) / 10, 100)
-        : raised >= 1000 ? Math.round(raised / 100) * 100 : Math.ceil(raised)
       out[String(d.id)] ??= {}
-      out[String(d.id)][String(f.id)] = target
+      out[String(d.id)][f.id] = round(base * (UPLIFT[f.id] ?? 1.10), f.unit)
     }
   }
   return out
 })()
 
 export const targetValue = (districtId, fieldId) =>
-  DEMO_TARGETS[String(districtId)]?.[String(fieldId)] ?? null
+  DEMO_TARGETS[String(districtId)]?.[fieldId] ?? null
 
 export const TARGETS_ARE_DEMO = true
