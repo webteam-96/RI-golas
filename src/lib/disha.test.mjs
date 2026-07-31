@@ -5,6 +5,7 @@ import {
   PREVIOUS, prevValue, fieldsIn, districtsIn,
 } from '../data/disha.js'
 import { completion, coverage, sections, dishaNumber, totalFor, TARGET_FIELDS } from './disha.js'
+import { targetValue, DEMO_TARGETS } from '../data/dishaTargets.js'
 
 let n = 0
 const check = (name, fn) => { fn(); n++; console.log('  ok  ' + name) }
@@ -108,6 +109,41 @@ check('numbers use Indian grouping and only abbreviate past a million', () => {
   assert.equal(dishaNumber(450000, '$'), '$4,50,000')
   assert.equal(dishaNumber('31.93', '%'), '31.93%')
   assert.equal(dishaNumber('YES'), 'YES')
+})
+
+// The consolidated table pairs an achieved figure with a target in every cell, so a target
+// that is missing or below what has already been achieved would read as a failure that isn't.
+check('a demo target exists wherever there is an achieved figure to measure', () => {
+  let paired = 0
+  for (const d of DISHA_DISTRICTS)
+    for (const f of DISHA_FIELDS) {
+      if (f.dataType === 'text' || f.dataType === 'boolean') continue
+      const a = parseFloat(prevValue(d.id, f.id))
+      if (!Number.isFinite(a) || a === 0) continue
+      const t = targetValue(d.id, f.id)
+      assert.ok(t != null, `${d.number} field ${f.id} has an achieved figure but no target`)
+      assert.ok(t >= a, `${d.number} field ${f.id}: target ${t} sits below achieved ${a}`)
+      paired++
+    }
+  assert.ok(paired > 300, `only ${paired} cells paired`)
+})
+
+check('demo targets are absent where there is nothing to measure', () => {
+  for (const d of DISHA_DISTRICTS)
+    for (const f of DISHA_FIELDS) {
+      if (prevValue(d.id, f.id) != null) continue
+      assert.equal(targetValue(d.id, f.id), null,
+        `${d.number} field ${f.id} has a target with no achieved figure behind it`)
+    }
+  assert.equal(Object.keys(DEMO_TARGETS).length, DISHA_DISTRICTS.length)
+})
+
+check('percentage targets never exceed 100', () => {
+  for (const d of DISHA_DISTRICTS)
+    for (const f of DISHA_FIELDS.filter((x) => x.dataType === 'percentage')) {
+      const t = targetValue(d.id, f.id)
+      if (t != null) assert.ok(t <= 100, `${d.number} field ${f.id} target ${t} exceeds 100%`)
+    }
 })
 
 console.log(`\n${n} checks passed\n`)
