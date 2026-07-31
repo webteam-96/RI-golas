@@ -1,81 +1,98 @@
-// Checks for the ported DISHA data:  node src/lib/disha.test.mjs
+// Checks for the ported DISHA Zone 5 & 6 data:  node src/lib/disha.test.mjs
 import assert from 'node:assert/strict'
 import {
   DISHA_ZONES, DISHA_DISTRICTS, DISHA_CATEGORIES, DISHA_FIELDS,
-  GOALS, PREVIOUS, goalValue, fieldsIn,
+  PREVIOUS, prevValue, fieldsIn, districtsIn,
 } from '../data/disha.js'
-import { piPoints, completion, sections, dishaNumber, TARGET_FIELDS } from './disha.js'
+import { completion, coverage, sections, dishaNumber, totalFor, TARGET_FIELDS } from './disha.js'
 
 let n = 0
 const check = (name, fn) => { fn(); n++; console.log('  ok  ' + name) }
 
-console.log('\ndisha data')
+console.log('\ndisha zone 5 & 6 data')
 
-check('the catalogue matches the portal: 2 zones, 21 districts, 3 categories, 40 fields', () => {
+check('catalogue matches the portal: 2 zones, 23 districts, 4 categories, 76 fields', () => {
   assert.equal(DISHA_ZONES.length, 2)
-  assert.equal(DISHA_DISTRICTS.length, 21)
-  assert.equal(DISHA_CATEGORIES.length, 3)
-  assert.equal(DISHA_FIELDS.length, 40)
-  assert.deepEqual(DISHA_CATEGORIES.map((c) => c.name), ['Membership', 'TRF', 'Public Image'])
+  assert.equal(DISHA_DISTRICTS.length, 23)
+  assert.equal(DISHA_CATEGORIES.length, 4)
+  assert.equal(DISHA_FIELDS.length, 76)
+  assert.deepEqual(DISHA_CATEGORIES.map((c) => c.name),
+    ['Membership', 'TRF', 'Youth Service', 'Public Image'])
 })
 
-check('field ids are split 1-12 / 13-22 / 23-40 as the portal expects', () => {
-  assert.deepEqual(fieldsIn(1).map((f) => f.id), Array.from({ length: 12 }, (_, i) => i + 1))
-  assert.deepEqual(fieldsIn(2).map((f) => f.id), Array.from({ length: 10 }, (_, i) => i + 13))
-  assert.deepEqual(fieldsIn(3).map((f) => f.id), Array.from({ length: 18 }, (_, i) => i + 23))
+check('field ids split 1-17 / 18-38 / 39-56 / 57-76', () => {
+  const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => i + a)
+  assert.deepEqual(fieldsIn(1).map((f) => f.id), range(1, 17))
+  assert.deepEqual(fieldsIn(2).map((f) => f.id), range(18, 38))
+  assert.deepEqual(fieldsIn(3).map((f) => f.id), range(39, 56))
+  assert.deepEqual(fieldsIn(4).map((f) => f.id), range(57, 76))
 })
 
-check('zone membership matches the portal', () => {
-  const z4 = DISHA_DISTRICTS.filter((d) => d.zoneId === 1).map((d) => d.number)
-  const z7 = DISHA_DISTRICTS.filter((d) => d.zoneId === 2).map((d) => d.number)
-  assert.deepEqual(z4, ['3011', '3012', '3040', '3053', '3055', '3056', '3060', '3080', '3090', '3141', '3142'])
-  assert.deepEqual(z7, ['3020', '3131', '3132', '3150', '3160', '3170', '3181', '3182', '3191', '3192'])
+// The earlier build treated 3292 as missing and borrowed 3291's figures. They are two
+// separate districts with two separate governors.
+check('Zone 6 has ten districts, with 3291 and 3292 both present and distinct', () => {
+  const z6 = districtsIn(2)
+  assert.equal(z6.length, 10)
+  assert.deepEqual(z6.map((d) => d.number),
+    ['3030', '3100', '3110', '3120', '3240', '3250', '3261', '3262', '3291', '3292'])
+  const d3291 = z6.find((d) => d.number === '3291')
+  const d3292 = z6.find((d) => d.number === '3292')
+  assert.notEqual(d3291.id, d3292.id)
+  assert.notEqual(d3291.governor, d3292.governor)
 })
 
-check('seeded targets survived the port', () => {
-  // Spot-check D3011 against the seed file.
-  assert.equal(goalValue(1, 1), '150')      // No of Clubs
-  assert.equal(goalValue(1, 2), '5700')     // No of Members
-  assert.equal(goalValue(1, 10), '31.93')   // Women Members %
-  assert.ok(Object.keys(GOALS).length === 21)
-  assert.ok(Object.keys(PREVIOUS).length === 21)
+check('Zone 5 has thirteen districts', () => {
+  assert.deepEqual(districtsIn(1).map((d) => d.number),
+    ['2981', '2982', '3000', '3203', '3204', '3205', '3206', '3211', '3212', '3220', '3231', '3233', '3234'])
+})
+
+check('every district has a named governor', () => {
+  for (const d of DISHA_DISTRICTS)
+    assert.ok(d.governor && d.governor.length > 3, `district ${d.number} has no governor`)
+})
+
+check('reference figures survived the port', () => {
+  // Spot-check D2981 against seed-previous-year-membership.sql
+  const d = DISHA_DISTRICTS.find((x) => x.number === '2981')
+  assert.equal(prevValue(d.id, 1), '151')     // Total No of Clubs
+  assert.equal(prevValue(d.id, 3), '422')     // Existing Women Members
+  assert.equal(prevValue(d.id, 11), '6355')   // Total Membership (Existing)
+  assert.equal(Object.keys(PREVIOUS).length, 23)
+})
+
+check('targets are unset — they are entered live at the event', () => {
+  for (const d of DISHA_DISTRICTS) {
+    const c = completion(d.id)
+    assert.equal(c.filled, 0)
+    assert.equal(c.complete, false)
+  }
+  assert.ok(TARGET_FIELDS.length > 0)
+  assert.ok(TARGET_FIELDS.every((f) => f.isTarget && f.dataType !== 'text'))
 })
 
 check('a blank source cell stays blank rather than becoming zero', () => {
-  // D3012 has no Women Member figure in the seed.
-  assert.equal(goalValue(2, 9), null)
   assert.equal(dishaNumber(null), null)
   assert.equal(dishaNumber(''), null)
-  assert.equal(dishaNumber(0), '0')         // a real zero still renders
+  assert.equal(dishaNumber(0), '0')
 })
 
-check('PI points follow the published scale', () => {
-  // Seminar 250 + 3 sessions 300 + district social 500 + 40% clubs 200 = 1250
-  assert.equal(piPoints({ 23: 'YES', 24: '3', 25: 'YES', 26: '40' }), 1250)
-  // 33% is the threshold, not above it
-  assert.equal(piPoints({ 26: '33' }), 200)
-  assert.equal(piPoints({ 26: '32.9' }), 0)
-  // Projects: 5 -> 500; 10 -> 500 + 5x200 = 1500; 12 -> 1500 + 2x300 = 2100
-  assert.equal(piPoints({ 31: '5' }), 500)
-  assert.equal(piPoints({ 31: '10' }), 1500)
-  assert.equal(piPoints({ 31: '12' }), 2100)
-  // Display: 5 -> 500; 8 -> 500 + 3x200 = 1100
-  assert.equal(piPoints({ 32: '5' }), 500)
-  assert.equal(piPoints({ 32: '8' }), 1100)
-  assert.equal(piPoints({}), 0)
+check('totals skip blanks instead of counting them as zero', () => {
+  const ids = DISHA_DISTRICTS.map((d) => d.id)
+  const byHand = ids.reduce((s, id) => {
+    const v = parseFloat(prevValue(id, 1))
+    return Number.isFinite(v) ? s + v : s
+  }, 0)
+  assert.equal(totalFor(1, ids), byHand)
+  assert.equal(totalFor(2, ids), null, 'a field with no reference data totals to null, not 0')
 })
 
-check('Public Image carries no pre-loaded figures', () => {
-  const piFields = fieldsIn(3).map((f) => f.id)
-  const anySet = DISHA_DISTRICTS.some((d) => piFields.some((fid) => goalValue(d.id, fid) != null))
-  assert.equal(anySet, false, 'PI is entered live, so nothing should be seeded')
-})
-
-check('completion counts only target fields, and no district is complete yet', () => {
-  assert.ok(TARGET_FIELDS.every((f) => f.isTarget && f.dataType !== 'text'))
-  const c = completion(1)
-  assert.ok(c.filled > 0 && c.filled < c.total)
-  assert.equal(DISHA_DISTRICTS.filter((d) => completion(d.id).complete).length, 0)
+check('coverage counts only fields that carry reference data', () => {
+  const prevFields = DISHA_FIELDS.filter((f) => f.showPrev).length
+  for (const d of DISHA_DISTRICTS) {
+    const c = coverage(d.id)
+    assert.equal(c.total, prevFields)
+    assert.ok(c.filled <= c.total)
+  }
 })
 
 check('sections group in source order without losing a field', () => {

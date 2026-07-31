@@ -1,51 +1,15 @@
-import { DISHA_FIELDS, DISHA_DISTRICTS, GOALS, goalValue } from '../data/disha.js'
+import { DISHA_FIELDS, DISHA_DISTRICTS, PREVIOUS, prevValue } from '../data/disha.js'
 
-/**
- * Public Image is scored, not measured. Ported from the DISHA portal's calculatePIPoints
- * so the two agree field for field — the field ids are the portal's own.
- */
-export function piPoints(goalsForDistrict = {}) {
-  const g = (id) => goalsForDistrict[String(id)]
-  const yes = (id) => String(g(id) ?? '').toUpperCase() === 'YES'
-  const int = (id) => parseInt(g(id), 10) || 0
-  const num = (id) => parseFloat(g(id)) || 0
-
-  let points = 0
-  if (yes(23)) points += 250                       // District PI seminar
-  points += int(24) * 100                          // Learning sessions
-  if (yes(25)) points += 500                       // District social media
-  if (num(26) >= 33) points += 200                 // 33% of clubs on social media
-  if (yes(27)) points += 500                       // Brand-compliant district website
-  if (num(28) >= 33) points += 200
-  if (yes(29)) points += 500                       // Radio / TV / electronic
-  if (num(30) >= 33) points += 200
-
-  // Projects: 100 each to 5, 200 each for 6-10, 300 each beyond 10.
-  const projects = int(31)
-  if (projects <= 5) points += projects * 100
-  else if (projects <= 10) points += 500 + (projects - 5) * 200
-  else points += 1500 + (projects - 10) * 300
-
-  // Display: 100 each to 5, 200 each beyond.
-  const displays = int(32)
-  points += displays <= 5 ? displays * 100 : 500 + (displays - 5) * 200
-
-  if (yes(33)) points += 500                       // Monthly district bulletin
-  if (num(34) >= 33) points += 200
-  points += int(35) * 100                          // Print media coverage
-  return points
-}
-
-/** Target fields only — readonly and computed fields are not something a district fills in. */
+/** Fields a district actually fills in. Read-only reference rows and free text are not targets. */
 export const TARGET_FIELDS = DISHA_FIELDS.filter((f) => f.isTarget && f.dataType !== 'text')
 
 /**
- * How far a district has got. `filled` counts target fields carrying a value; blank cells in
- * the source stay blank rather than counting as a zero someone entered.
+ * How far a district has got. Targets are entered live at the goal-setting event, so before
+ * it runs every district reads 0 of n — that is the true state, not a bug.
  */
-export function completion(districtId) {
+export function completion(districtId, targets = {}) {
   const filled = TARGET_FIELDS.filter((f) => {
-    const v = goalValue(districtId, f.id)
+    const v = targets[String(f.id)]
     return v !== null && v !== undefined && v !== ''
   }).length
   return {
@@ -57,16 +21,20 @@ export function completion(districtId) {
   }
 }
 
+/** Existing figures a district carries — how much of its reference data is on file. */
+export function coverage(districtId) {
+  const prevFields = DISHA_FIELDS.filter((f) => f.showPrev)
+  const filled = prevFields.filter((f) => prevValue(districtId, f.id) != null).length
+  return { filled, total: prevFields.length, pct: prevFields.length ? (filled / prevFields.length) * 100 : 0 }
+}
+
 export function zoneStats(zoneId) {
   const ds = DISHA_DISTRICTS.filter((d) => d.zoneId === zoneId)
-  const stats = ds.map((d) => completion(d.id))
-  const completed = stats.filter((s) => s.complete).length
+  const cov = ds.map((d) => coverage(d.id))
   return {
     districts: ds.length,
-    completed,
-    started: stats.filter((s) => s.started).length,
-    locked: 0,
-    pct: ds.length ? stats.reduce((s, x) => s + x.pct, 0) / ds.length : 0,
+    withData: cov.filter((c) => c.filled > 0).length,
+    pct: ds.length ? cov.reduce((s, x) => s + x.pct, 0) / ds.length : 0,
   }
 }
 
@@ -97,4 +65,15 @@ export function dishaNumber(v, unit) {
   return unit === '$' ? `$${body}` : unit === '%' ? `${body}%` : body
 }
 
-export const districtGoals = (districtId) => GOALS[String(districtId)] ?? {}
+/** Sum one field across a set of districts, skipping blanks so they never read as zero. */
+export function totalFor(fieldId, districtIds) {
+  let sum = null
+  for (const id of districtIds) {
+    const v = prevValue(id, fieldId)
+    const n = typeof v === 'string' ? parseFloat(v) : v
+    if (typeof n === 'number' && Number.isFinite(n)) sum = (sum ?? 0) + n
+  }
+  return sum
+}
+
+export const districtPrev = (districtId) => PREVIOUS[String(districtId)] ?? {}
