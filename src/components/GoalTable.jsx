@@ -3,7 +3,8 @@ import { Pencil, RotateCcw, Save } from 'lucide-react'
 import { useGoals } from '@/context/GoalsProvider'
 import { percentAchieved, goalStatus, onTrackYN } from '@/lib/rollup'
 import { fmt, pct } from '@/lib/format'
-import { StatusPill, YesNoPill, Coverage, Card } from './Bits'
+import { AREAS, metricsInArea } from '@/data/metrics'
+import { StatusPill, YesNoPill, Coverage, Card, EmptyState } from './Bits'
 
 /**
  * Goal entry + display. One component, four scopes.
@@ -21,6 +22,11 @@ export default function GoalTable({
   const { read, patch, reset, rolledUpTarget, notify } = useGoals()
   const [openComment, setOpenComment] = useState(null)
 
+  // The same four areas at every level, so the tab strip never changes shape as you drill.
+  const areas = AREAS.filter((a) => metricsInArea(metrics, a.id).length > 0)
+  const [area, setArea] = useState(areas[0]?.id ?? 'foundation')
+  const rows = metricsInArea(metrics, area)
+
   const showChild = !!(childScope && childIds?.length)
   const showContext = !!(contextLabel && contextScope && contextId)
 
@@ -35,7 +41,7 @@ export default function GoalTable({
   return (
     <Card
       title="Goals"
-      sub={`${metrics.length} metrics · targets are editable and roll up immediately`}
+      sub={`${rows.length} metrics in ${AREAS.find((a) => a.id === area)?.label} · targets are editable and roll up immediately`}
       right={
         editable && (
           <div className="flex gap-2">
@@ -56,6 +62,29 @@ export default function GoalTable({
         )
       }
     >
+      <div className="flex gap-1 flex-wrap bg-slate-100 rounded-xl p-1 mb-4">
+        {areas.map((a) => {
+          const active = a.id === area
+          return (
+            <button
+              key={a.id}
+              onClick={() => setArea(a.id)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                active ? 'text-white shadow-sm font-semibold' : 'text-slate-500 hover:text-slate-800 hover:bg-white'
+              }`}
+              style={active ? { backgroundColor: '#003DA5' } : {}}
+            >
+              {a.label}
+              <span className={`ml-1.5 text-[10px] ${active ? 'text-blue-200' : 'text-slate-400'}`}>
+                {metricsInArea(metrics, a.id).length}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      {!rows.length && <EmptyState>No metrics in this area yet.</EmptyState>}
+
       <div className="overflow-x-auto -mx-5 px-5">
         <table className="w-full text-sm min-w-[720px]">
           <thead>
@@ -72,7 +101,7 @@ export default function GoalTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {metrics.map((m) => {
+            {rows.map((m) => {
               const g = read(scope, scopeId, m.id)
               const isYesNo = m.unit === 'yesno'
               const percent = isYesNo ? null : percentAchieved(g.target, g.actual, m.higherIsBetter !== false)

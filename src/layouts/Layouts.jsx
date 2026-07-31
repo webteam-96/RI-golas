@@ -5,15 +5,15 @@ import { CLUBS } from '@/data/clubs'
 import { initials } from '@/lib/format'
 
 export function RiLayout() {
+  // No zone layer here — the RI Director looks straight at goal areas and districts.
   const nav = [
     { to: '/ri/overview', label: 'Overview' },
-    { to: '/ri/zones', label: 'Zones' },
     { to: '/ri/goals', label: 'Goals' },
   ]
   return (
     <Shell
       nav={nav}
-      titles={{ '/ri/overview': 'Global Overview', '/ri/zones': 'Zones', '/ri/goals': 'Goals' }}
+      titles={{ '/ri/overview': 'Global Overview', '/ri/goals': 'Goals' }}
       fallbackTitle="RI Director Office"
       chip="RI" name="RI Director Office" role="Director-elect"
       crumbs={[{ label: 'RI Director' }]}

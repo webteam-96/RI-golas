@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { CLUBS } from '@/data/clubs'
 import { ZONE } from '@/data/zone6'
-import { CLUB_METRICS } from '@/data/metrics'
+import { metricsFor } from '@/data/metrics'
 import { LevelBanner, DataNote } from '@/components/Bits'
 import GoalTable from '@/components/GoalTable'
 
@@ -24,7 +24,7 @@ export default function ClubGoals() {
         </DataNote>
       </div>
 
-      <GoalTable scope="club" scopeId={clubId} metrics={CLUB_METRICS} />
+      <GoalTable scope="club" scopeId={clubId} metrics={metricsFor('club')} />
     </>
   )
 }

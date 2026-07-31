@@ -3,7 +3,8 @@
 // actually call, on every record, so a missing field surfaces here and not on the projector.
 import assert from 'node:assert/strict'
 import { CLUBS } from '../data/clubs.js'
-import { FOUNDATION, CLUB_METRICS } from '../data/metrics.js'
+import { FOUNDATION, CLUB_METRICS, AREAS, metricsFor, metricsInArea } from '../data/metrics.js'
+import { AREA_METRIC_IDS, AREA_LEAD, areaLead } from '../data/headline.js'
 import { ZONE, DISTRICTS } from '../data/zone6.js'
 import { actualFor, coordinatorTotal, clubsIn } from './rollup.js'
 
@@ -76,6 +77,40 @@ check('metric ids are unique across the whole catalogue', () => {
   const ids = [...FOUNDATION, ...CLUB_METRICS].map((m) => m.id)
   const dupes = ids.filter((x, i) => ids.indexOf(x) !== i)
   assert.deepEqual(dupes, [], `duplicate metric ids: ${dupes}`)
+})
+
+// The tab strip is driven by `area`. A metric with a typo'd area silently disappears from
+// every screen rather than erroring, so pin the four areas down here.
+check('there are exactly four goal areas', () => {
+  assert.deepEqual(AREAS.map((a) => a.id), ['foundation', 'membership', 'publicimage', 'projects'])
+})
+
+check('every metric belongs to one of the four areas', () => {
+  const ids = new Set(AREAS.map((a) => a.id))
+  for (const m of [...FOUNDATION, ...CLUB_METRICS])
+    assert.ok(ids.has(m.area), `${m.id} has area "${m.area}"`)
+})
+
+check('every area has metrics at every scope that offers it', () => {
+  for (const scope of ['ri', 'zone', 'district', 'club']) {
+    const ms = metricsFor(scope)
+    for (const a of AREAS)
+      assert.ok(metricsInArea(ms, a.id).length > 0, `${scope} has no ${a.id} metrics`)
+  }
+})
+
+check('each area lead and column metric resolves to a real metric', () => {
+  for (const a of AREAS) {
+    assert.ok(areaLead(a.id), `no lead metric for ${a.id}`)
+    assert.equal(areaLead(a.id).area, a.id, `lead metric for ${a.id} sits in the wrong area`)
+    const all = [...FOUNDATION, ...CLUB_METRICS]
+    for (const id of AREA_METRIC_IDS[a.id]) {
+      const m = all.find((x) => x.id === id)
+      assert.ok(m, `${a.id} column "${id}" does not exist`)
+      assert.equal(m.area, a.id, `${id} is listed under ${a.id} but its area is ${m.area}`)
+    }
+  }
+  assert.deepEqual(Object.keys(AREA_LEAD).sort(), AREAS.map((a) => a.id).sort())
 })
 
 console.log(`\n${n} checks passed\n`)

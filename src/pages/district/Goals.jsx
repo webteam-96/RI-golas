@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { ZONE } from '@/data/zone6'
-import { FOUNDATION } from '@/data/metrics'
+import { metricsFor } from '@/data/metrics'
 import { clubsIn } from '@/lib/rollup'
 import { LevelBanner, DataNote } from '@/components/Bits'
 import GoalTable from '@/components/GoalTable'
@@ -28,7 +28,7 @@ export default function DistrictGoals() {
       <GoalTable
         scope="district"
         scopeId={districtId}
-        metrics={FOUNDATION}
+        metrics={metricsFor('district')}
         contextLabel="Zone target"
         contextScope="zone"
         contextId={ZONE.id}

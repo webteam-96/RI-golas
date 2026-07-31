@@ -3,6 +3,10 @@
 Clickable React prototype for the RI Zone 6 goal-tracking presentation.
 Four levels, no Assistant Governor layer: **Club → District → Zone → RI Director**.
 
+Every level tracks the same **four goal areas** — Foundation, Membership, Public Image,
+Projects. The tab strip never changes shape as you drill; only the scope of the numbers does.
+The RI Director view has no zone layer: it goes straight from the four areas to the districts.
+
 ```bash
 npm install
 npm run dev      # http://localhost:5173
@@ -13,7 +17,7 @@ npm run build
 
 | Route | Screen |
 |---|---|
-| `/ri/overview` | All zones, goal achievement by area, districts ranked |
+| `/ri/overview` | The four goal areas, then all 9 districts directly — no zone layer |
 | `/zone/coordinators` | RRFC + 5 ARRFCs — expand a coordinator to see their supported districts' data in place |
 | `/zone/districts` | 9 districts, expandable to their clubs, sticky totals |
 | `/zone/foundation` | All 24 Foundation metrics × 9 districts, in the workbook's own layout |
@@ -32,6 +36,10 @@ A role switcher in the top bar moves between the four levels. It is a demo affor
 Club rosters exist for D3120 (42) and D3030 (4). The other seven districts render district-level
 figures with an explicit "club-level data not yet loaded" state — never a zero.
 
+Foundation figures are real for all nine districts. Membership, Public Image and Projects roll up
+from club reports, so they only have values where a roster exists — and Public Image fields exist
+only in the D3030 records. Those areas show dashes elsewhere rather than inventing zeros.
+
 Rotary Year **2025–26, data as of March 2026**, matching the workbook. Goal status is pace-aware,
 so this date drives every On Track / At Risk / Behind badge.
 
@@ -39,7 +47,7 @@ so this date drives every On Track / At Risk / Behind badge.
 
 ```bash
 node src/lib/rollup.test.mjs    # 11 checks — the roll-up engine
-node src/lib/smoke.test.mjs     #  8 checks — every data path the pages read
+node src/lib/smoke.test.mjs     # 12 checks — data paths and the four-area structure
 ```
 
 Three rules the engine enforces, each with a test:

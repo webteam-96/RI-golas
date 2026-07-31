@@ -1,30 +1,32 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { ZONE, DISTRICTS, getDistrict, coordinatorsForDistrict } from '@/data/zone6'
 import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
-import { HEADLINE, shortLabel } from '@/data/headline'
-import { actualFor, percentAchieved, goalStatus, onTrackYN, clubsIn } from '@/lib/rollup'
-import { useGoals } from '@/context/GoalsProvider'
-import { fmt, usdExact, num, pct } from '@/lib/format'
-import { LevelBanner, Kpi, Card, StatusPill, DataNote, EmptyState } from '@/components/Bits'
+import { AREAS, areaLead } from '@/data/headline'
+import { actualFor, clubsIn } from '@/lib/rollup'
+import { usdExact, num } from '@/lib/format'
+import { LevelBanner, Card, DataNote, EmptyState } from '@/components/Bits'
+import { AreaCardStrip, AreaGoalTable } from '@/components/AreaCards'
 
 export default function DistrictOverview() {
   const { districtId } = useParams()
-  const { read } = useGoals()
+  const [area, setArea] = useState('foundation')
   const d = getDistrict(districtId)
   const clubs = clubsIn(districtId)
   const arrfc = coordinatorsForDistrict(districtId)
   const sub = DISTRICT_DATA_SUBSTITUTIONS[districtId]
 
+  const lead = areaLead(area)
   const rank = [...DISTRICTS]
-    .map((x) => ({ id: x.id, v: actualFor('annualFund', 'district', x.id).value ?? 0 }))
+    .map((x) => ({ id: x.id, v: actualFor(lead.id, 'district', x.id).value ?? 0 }))
     .sort((a, b) => b.v - a.v)
     .findIndex((x) => x.id === districtId) + 1
 
   return (
     <>
       <LevelBanner
-        eyebrow={`${ZONE.name} · rank ${rank} of ${DISTRICTS.length}`}
+        eyebrow={`${ZONE.name} · ${AREAS.find((a) => a.id === area).label} rank ${rank} of ${DISTRICTS.length}`}
         title={`District ${districtId}`}
         sub={`${d.region} · ARRFC ${arrfc.map((c) => c.name).join(', ') || '—'}`}
         right={
@@ -35,14 +37,7 @@ export default function DistrictOverview() {
         }
       />
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-5">
-        {HEADLINE.slice(0, 5).map((m) => (
-          <Kpi key={m.id} label={shortLabel(m)} value={fmt(actualFor(m.id, 'district', districtId).value, m.unit)}
-               tone={m.id === 'annualFund' ? 'gold' : 'blue'} />
-        ))}
-        <Kpi label="Clubs" value={clubs.length || '—'} tone="slate"
-             sub={clubs.length ? 'roster loaded' : 'not loaded'} />
-      </div>
+      <AreaCardStrip scope="district" scopeId={districtId} area={area} onSelect={setArea} />
 
       {sub && (
         <div className="mb-5">
@@ -53,48 +48,16 @@ export default function DistrictOverview() {
         </div>
       )}
 
-      <Card
+      <AreaGoalTable
+        scope="district"
+        scopeId={districtId}
+        area={area}
+        contextScope="zone"
+        contextId={ZONE.id}
+        contextLabel="Zone target"
         title="Goal Progress vs. District Target"
         sub="The zone target sits alongside, so you can see whether this district clears the zone bar"
-        className="mb-5"
-      >
-        <div className="overflow-x-auto -mx-5 px-5">
-          <table className="w-full text-sm min-w-[720px]">
-            <thead>
-              <tr className="text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-200">
-                <th className="text-left font-bold pb-2">Goal Area</th>
-                <th className="text-right font-bold pb-2 px-3">District Target</th>
-                <th className="text-right font-bold pb-2 px-3">Zone Target</th>
-                <th className="text-right font-bold pb-2 px-3">Actual</th>
-                <th className="text-right font-bold pb-2 px-3">%</th>
-                <th className="text-left font-bold pb-2 px-3">Status</th>
-                <th className="text-center font-bold pb-2">On Track</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {HEADLINE.map((m) => {
-                const g = read('district', districtId, m.id)
-                const z = read('zone', ZONE.id, m.id)
-                const p = percentAchieved(g.target, g.actual, true)
-                const s = goalStatus(p)
-                return (
-                  <tr key={m.id} className="hover:bg-slate-50/70">
-                    <td className="py-2.5 font-medium text-slate-700">{shortLabel(m)}</td>
-                    <td className="py-2.5 px-3 text-right tabular-nums text-slate-700">{fmt(g.target, m.unit)}</td>
-                    <td className="py-2.5 px-3 text-right tabular-nums text-slate-400">{fmt(z.target, m.unit)}</td>
-                    <td className="py-2.5 px-3 text-right tabular-nums font-semibold text-slate-800">{fmt(g.actual, m.unit)}</td>
-                    <td className="py-2.5 px-3 text-right tabular-nums font-semibold">{p == null ? '—' : pct(p)}</td>
-                    <td className="py-2.5 px-3"><StatusPill status={s} /></td>
-                    <td className={`py-2.5 text-center font-bold text-xs ${p == null ? 'text-slate-300' : onTrackYN(s) === 'Y' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                      {p == null ? '—' : onTrackYN(s)}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      />
 
       <Card title="Clubs" sub={clubs.length ? `${clubs.length} clubs · top 8 by membership` : undefined}
             right={clubs.length ? <Link to={`/district/${districtId}/clubs`} className="text-xs font-semibold text-[#003DA5] hover:underline">View all →</Link> : null}>

@@ -47,6 +47,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 3
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -89,6 +95,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -131,6 +143,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -173,6 +191,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -215,6 +239,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 2
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -257,6 +287,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 6
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -299,6 +335,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -341,6 +383,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 1
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -383,6 +431,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 2
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -425,6 +479,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -467,6 +527,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -509,6 +575,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 3,
       "interact": 4
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -551,6 +623,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 2
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -593,6 +671,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -635,6 +719,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -677,6 +767,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 3
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -719,6 +815,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -761,6 +863,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -803,6 +911,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -845,6 +959,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 2
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -887,6 +1007,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -929,6 +1055,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -971,6 +1103,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 2
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1013,6 +1151,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1055,6 +1199,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1097,6 +1247,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1139,6 +1295,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1181,6 +1343,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1223,6 +1391,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 2
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1265,6 +1439,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1307,6 +1487,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 2,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1349,6 +1535,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 3
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1391,6 +1583,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1433,6 +1631,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1475,6 +1679,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 7
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1517,6 +1727,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1559,6 +1775,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 3
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1601,6 +1823,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1643,6 +1871,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1685,6 +1919,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1727,6 +1967,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 1,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1769,6 +2015,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": null,
+      "newsletters": null,
+      "announcements": null,
+      "ocv": null
     }
   },
   {
@@ -1815,6 +2067,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": 4,
+      "newsletters": 1,
+      "announcements": 0,
+      "ocv": 138
     }
   },
   {
@@ -1861,6 +2119,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": 0,
+      "newsletters": 0,
+      "announcements": 0,
+      "ocv": 43
     }
   },
   {
@@ -1907,6 +2171,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": 0,
+      "newsletters": 0,
+      "announcements": 11,
+      "ocv": 47
     }
   },
   {
@@ -1953,6 +2223,12 @@ export const CLUBS = [
     "sponsored": {
       "rotaract": 0,
       "interact": 0
+    },
+    "publicImage": {
+      "initiatives": 0,
+      "newsletters": 0,
+      "announcements": 0,
+      "ocv": 67
     }
   }
 ]

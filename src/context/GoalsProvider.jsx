@@ -3,7 +3,9 @@ import { FOUNDATION, CLUB_METRICS, SEED_ZONE_TARGETS, SEED_DISTRICT_TARGET_FACTO
 import { ZONE } from '@/data/zone6'
 import { actualFor } from '@/lib/rollup'
 
-const KEY = 'goalseek.goals.v1'
+// Bumped when the seeded target set changes, so a stale localStorage copy from an earlier
+// shape does not leave half the goals blank on someone's machine.
+const KEY = 'goalseek.goals.v2'
 const Ctx = createContext(null)
 
 const goalKey = (scope, scopeId, metricId) => `${scope}:${scopeId}:${metricId}`
@@ -18,14 +20,20 @@ function seedTargets() {
   const out = {}
   for (const [metricId, zoneTarget] of Object.entries(SEED_ZONE_TARGETS)) {
     out[goalKey('zone', ZONE.id, metricId)] = { target: zoneTarget }
+    out[goalKey('ri', 'ri', metricId)] = { target: zoneTarget }
 
-    const m = FOUNDATION.find((x) => x.id === metricId)
-    if (!m || m.unit === 'yesno') continue
-    const zoneActual = ZONE.districtIds.reduce((s, d) => s + (typeof m.actuals[d] === 'number' ? m.actuals[d] : 0), 0)
-    if (!zoneActual) continue
-    for (const d of ZONE.districtIds) {
-      const a = typeof m.actuals[d] === 'number' ? m.actuals[d] : 0
-      const t = Math.round((a / zoneActual) * zoneTarget * SEED_DISTRICT_TARGET_FACTOR)
+    const fm = FOUNDATION.find((x) => x.id === metricId)
+    if (fm?.unit === 'yesno') continue
+
+    // Split the zone target across districts in proportion to what each already contributes.
+    const shares = ZONE.districtIds.map((d) => {
+      const v = actualFor(metricId, 'district', d).value
+      return { d, v: typeof v === 'number' ? v : 0 }
+    })
+    const total = shares.reduce((s, x) => s + x.v, 0)
+    if (!total) continue
+    for (const { d, v } of shares) {
+      const t = Math.round((v / total) * zoneTarget * SEED_DISTRICT_TARGET_FACTOR)
       if (t > 0) out[goalKey('district', d, metricId)] = { target: t }
     }
   }
