@@ -16,7 +16,7 @@ export default function AdminDistricts() {
   return (
     <>
       <LevelBanner
-        eyebrow={`Goal setting ${GOALS_YEAR}`}
+        eyebrow={`RI Director Office · goal setting ${GOALS_YEAR}`}
         title="Districts"
         sub={`${DISHA_DISTRICTS.length} districts and their governors across ${DISHA_ZONES.length} zones`}
         right={

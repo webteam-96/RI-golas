@@ -5,9 +5,12 @@ import { CLUBS } from '@/data/clubs'
 import { initials } from '@/lib/format'
 
 export function RiLayout() {
-  // No zone layer here — the RI Director looks straight at goal areas and districts.
+  // The RI Director is the administrator — the consolidated view and the Zone 6 hierarchy
+  // are both theirs, so they sit in one sidebar rather than behind two identities.
   const nav = [
-    { to: '/ri/overview', label: 'Overview' },
+    { to: '/ri/consolidated', label: 'Consolidated Goals' },
+    { to: '/ri/districts', label: 'Districts' },
+    { to: '/ri/overview', label: 'Zone 6 Overview' },
     { to: '/ri/coordinators', label: 'Coordinators' },
     { to: '/ri/goals', label: 'Goals' },
   ]
@@ -15,29 +18,15 @@ export function RiLayout() {
     <Shell
       nav={nav}
       titles={{
-        '/ri/overview': 'Global Overview',
+        '/ri/consolidated': 'Consolidated Goals',
+        '/ri/districts': 'Districts',
+        '/ri/overview': 'Zone 6 Overview',
         '/ri/coordinators': 'Foundation Coordinators',
         '/ri/goals': 'Goals',
       }}
       fallbackTitle="RI Director Office"
-      chip="RI" name="RI Director Office" role="Director-elect"
+      chip="RI" name="RI Director Office" role="Administrator"
       crumbs={[{ label: 'RI Director' }]}
-    />
-  )
-}
-
-export function AdminLayout() {
-  const nav = [
-    { to: '/admin', label: 'Consolidated Goals' },
-    { to: '/admin/districts', label: 'Districts' },
-  ]
-  return (
-    <Shell
-      nav={nav}
-      titles={{ '/admin': 'Consolidated Goals', '/admin/districts': 'Districts' }}
-      fallbackTitle="Goal Setting"
-      chip="GS" name="Zones 4 & 7" role="Goal setting 2026-27"
-      crumbs={[{ label: 'Zones 4 & 7' }]}
     />
   )
 }

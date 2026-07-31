@@ -13,7 +13,7 @@ export default function AdminDashboard() {
   return (
     <>
       <LevelBanner
-        eyebrow={`Monthly coordinator report · ${GOALS_YEAR}`}
+        eyebrow={`RI Director Office · monthly coordinator report · ${GOALS_YEAR}`}
         title="Goal Progress"
         sub={`${DISHA_ZONES.map((z) => z.name).join(' & ')} · ${DISHA_DISTRICTS.length} districts · achieved against target, field by field`}
       />
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
       <GoalMatrix
         categories={REPORT_CATEGORIES.map((c) => ({ id: c.id, label: c.label, badge: c.pdf }))}
         fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'not collected' }))}
-        entities={districts.map((d) => ({ id: d.id, label: d.number, to: `/admin/districts` }))}
+        entities={districts.map((d) => ({ id: d.id, label: d.number, to: '/ri/districts' }))}
         achieved={(f, e) => achievedFor(f, DISHA_DISTRICTS.find((d) => d.id === e.id))}
         target={(f, e) => targetValue(e.id, f.id)}
         format={dishaNumber}
