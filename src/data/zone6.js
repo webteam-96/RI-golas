@@ -52,6 +52,16 @@ export const ZONE = {
 
 export const ARRFC_ROLE_LONG = 'Assistant Regional Rotary Foundation Coordinator'
 
+/**
+ * Who the Zone Coordinator role signs in as. That role is one ARRFC, not the whole team —
+ * they see their own districts and nobody else's. The RI Director is the one who sees
+ * everyone. Change this id to demo a different coordinator.
+ */
+export const SIGNED_IN_ARRFC = 'arrfc-1'
+
+export const signedInCoordinator = () =>
+  ZONE.coordinators.find((c) => c.id === SIGNED_IN_ARRFC) ?? ZONE.coordinators[0]
+
 export const getDistrict = (id) => DISTRICTS.find((d) => d.id === id) ?? null
 
 export const coordinatorsForDistrict = (districtId) =>

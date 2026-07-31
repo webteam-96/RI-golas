@@ -47,7 +47,7 @@ export default function App() {
           </Route>
 
           <Route path="/zone" element={<ZoneLayout />}>
-            <Route index element={<Navigate to="/zone/overview" replace />} />
+            <Route index element={<Navigate to="/zone/coordinators" replace />} />
             <Route path="overview" element={<ZoneOverview />} />
             <Route path="coordinators" element={<Coordinators />} />
             <Route path="districts" element={<ZoneDistricts />} />

@@ -1,6 +1,6 @@
 import { useParams, Navigate } from 'react-router-dom'
 import Shell from '@/components/Shell'
-import { ZONE } from '@/data/zone6'
+import { ZONE, signedInCoordinator } from '@/data/zone6'
 import { DISHA_DISTRICTS, DISHA_ZONES } from '@/data/disha'
 import { CLUBS } from '@/data/clubs'
 import { initials } from '@/lib/format'
@@ -31,10 +31,12 @@ export function RiLayout() {
 }
 
 export function ZoneLayout() {
+  // The Zone Coordinator role is one ARRFC signed in, not the zone office.
+  const me = signedInCoordinator()
   const nav = [
-    { to: '/zone/overview', label: 'Overview' },
-    { to: '/zone/coordinators', label: 'Coordinators' },
-    { to: '/zone/districts', label: 'Districts' },
+    { to: '/zone/coordinators', label: 'My Districts' },
+    { to: '/zone/overview', label: 'Zone Overview' },
+    { to: '/zone/districts', label: 'All Districts' },
     { to: '/zone/goals', label: 'Goals' },
     { to: '/zone/foundation', label: 'Foundation Grid' },
     { to: '/zone/monthly-report', label: 'Monthly Report' },
@@ -43,16 +45,18 @@ export function ZoneLayout() {
     <Shell
       nav={nav}
       titles={{
+        '/zone/coordinators': 'My Districts',
         '/zone/overview': 'Zone 6 Overview',
-        '/zone/coordinators': 'Foundation Coordinators',
-        '/zone/districts': 'Districts',
+        '/zone/districts': 'All Districts',
         '/zone/goals': 'Goals — Zone Targets',
         '/zone/foundation': 'Foundation Goals Grid',
         '/zone/monthly-report': 'Monthly Coordinator Report',
       }}
-      fallbackTitle="Zone 6"
-      chip="Z6" name={ZONE.name} role={`RRFC ${ZONE.rrfc.name}`}
-      crumbs={[{ label: 'RI Director', to: '/ri/overview' }, { label: ZONE.name }]}
+      fallbackTitle={me.name}
+      chip={initials(me.name.replace(/^PDG\s+Rtn\.?\s*(Dr\.?)?\s*/i, ''))}
+      name={me.name}
+      role={`ARRFC · D${me.supports.join(' D')}`}
+      crumbs={[{ label: 'RI Director', to: '/ri/overview' }, { label: ZONE.name }, { label: me.name }]}
     />
   )
 }
