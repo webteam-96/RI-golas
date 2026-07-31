@@ -64,7 +64,7 @@ export default function GoalTable({
               <th className="text-right font-bold pb-2 px-2 w-32">Target</th>
               {showChild && <th className="text-right font-bold pb-2 px-2 w-32">{childLabel}</th>}
               {showContext && <th className="text-right font-bold pb-2 px-2 w-32">{contextLabel}</th>}
-              <th className="text-right font-bold pb-2 px-2 w-32">Actual</th>
+              <th className="text-right font-bold pb-2 px-2 w-32">Achieved</th>
               <th className="text-right font-bold pb-2 px-2 w-20">%</th>
               <th className="text-left font-bold pb-2 px-2 w-28">Status</th>
               <th className="text-center font-bold pb-2 px-2 w-16">On&nbsp;Track</th>
@@ -120,7 +120,7 @@ export default function GoalTable({
                     </td>
                   )}
 
-                  {/* Actual */}
+                  {/* Achieved */}
                   <td className="py-2.5 px-2 text-right">
                     {isYesNo ? (
                       <span className="text-slate-600 text-xs font-semibold tabular-nums">

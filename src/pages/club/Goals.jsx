@@ -14,7 +14,7 @@ export default function ClubGoals() {
       <LevelBanner
         eyebrow={`${ZONE.name} · District ${club.districtId} · goal entry`}
         title={`Goals — ${club.name}`}
-        sub="Set your club's targets. Actuals come from reported data; override any of them if needed."
+        sub="Set your club's targets. Achieved figures come from reported data; override any of them if needed."
       />
 
       <div className="mb-4">

@@ -129,7 +129,7 @@ export default function RiOverview() {
                       <tr className="text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-200">
                         <th className="text-left font-bold pb-2">Goal</th>
                         <th className="text-right font-bold pb-2 px-3">Target</th>
-                        <th className="text-right font-bold pb-2 px-3">Actual</th>
+                        <th className="text-right font-bold pb-2 px-3">Achieved</th>
                         <th className="text-right font-bold pb-2 px-3">%</th>
                         <th className="text-left font-bold pb-2 px-3">Status</th>
                         <th className="text-center font-bold pb-2">On&nbsp;Track</th>

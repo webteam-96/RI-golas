@@ -65,7 +65,7 @@ export default function DistrictOverview() {
                 <th className="text-left font-bold pb-2">Goal Area</th>
                 <th className="text-right font-bold pb-2 px-3">District Target</th>
                 <th className="text-right font-bold pb-2 px-3">Zone Target</th>
-                <th className="text-right font-bold pb-2 px-3">Actual</th>
+                <th className="text-right font-bold pb-2 px-3">Achieved</th>
                 <th className="text-right font-bold pb-2 px-3">%</th>
                 <th className="text-left font-bold pb-2 px-3">Status</th>
                 <th className="text-center font-bold pb-2">On Track</th>

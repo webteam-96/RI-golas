@@ -43,7 +43,7 @@ export default function ZoneOverview() {
               <tr className="text-[10px] uppercase tracking-widest text-slate-400 border-b border-slate-200">
                 <th className="text-left font-bold pb-2">Goal Area</th>
                 <th className="text-right font-bold pb-2 px-3">Zone Target</th>
-                <th className="text-right font-bold pb-2 px-3">Actual to Date</th>
+                <th className="text-right font-bold pb-2 px-3">Achieved to Date</th>
                 <th className="text-right font-bold pb-2 px-3">% Achieved</th>
                 <th className="text-left font-bold pb-2 px-3">Status</th>
                 <th className="text-center font-bold pb-2 px-3">On Track</th>
