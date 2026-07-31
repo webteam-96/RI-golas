@@ -3,10 +3,9 @@ import { GoalsProvider } from '@/context/GoalsProvider'
 import { RiLayout, ZoneLayout, DistrictLayout, ClubLayout } from '@/layouts/Layouts'
 import ConsolidatedGoals from '@/pages/admin/Dashboard'
 import AllDistricts from '@/pages/admin/Districts'
+import DistrictDetail from '@/pages/admin/DistrictDetail'
 
-import RiOverview from '@/pages/ri/Overview'
 import RiCoordinators from '@/pages/ri/Coordinators'
-import RiGoals from '@/pages/ri/Goals'
 
 import ZoneOverview from '@/pages/zone/Overview'
 import Coordinators from '@/pages/zone/Coordinators'
@@ -38,10 +37,13 @@ export default function App() {
             <Route index element={<Navigate to="/ri/consolidated" replace />} />
             <Route path="consolidated" element={<ConsolidatedGoals />} />
             <Route path="districts" element={<AllDistricts />} />
-            <Route path="overview" element={<RiOverview />} />
+            <Route path="districts/:districtId" element={<DistrictDetail />} />
             <Route path="coordinators" element={<RiCoordinators />} />
-            <Route path="zones" element={<Navigate to="/ri/overview" replace />} />
-            <Route path="goals" element={<RiGoals />} />
+            {/* Retired from the RI Director: both ran on the Zone 6 dataset and disagreed
+                with the consolidated view. They remain under the Zone role. */}
+            <Route path="overview" element={<Navigate to="/ri/consolidated" replace />} />
+            <Route path="zones" element={<Navigate to="/ri/consolidated" replace />} />
+            <Route path="goals" element={<Navigate to="/ri/consolidated" replace />} />
           </Route>
 
           <Route path="/zone" element={<ZoneLayout />}>

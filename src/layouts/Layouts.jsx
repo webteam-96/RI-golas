@@ -7,12 +7,12 @@ import { initials } from '@/lib/format'
 export function RiLayout() {
   // The RI Director is the administrator — the consolidated view and the Zone 6 hierarchy
   // are both theirs, so they sit in one sidebar rather than behind two identities.
+  // One consolidated view, not two. The Zone 6 Overview ran on a different dataset and
+  // disagreed with this one field for field; it still lives under the Zone role.
   const nav = [
     { to: '/ri/consolidated', label: 'Consolidated Goals' },
     { to: '/ri/districts', label: 'Districts' },
-    { to: '/ri/overview', label: 'Zone 6 Overview' },
     { to: '/ri/coordinators', label: 'Coordinators' },
-    { to: '/ri/goals', label: 'Goals' },
   ]
   return (
     <Shell
@@ -20,9 +20,7 @@ export function RiLayout() {
       titles={{
         '/ri/consolidated': 'Consolidated Goals',
         '/ri/districts': 'Districts',
-        '/ri/overview': 'Zone 6 Overview',
         '/ri/coordinators': 'Foundation Coordinators',
-        '/ri/goals': 'Goals',
       }}
       fallbackTitle="RI Director Office"
       chip="RI" name="RI Director Office" role="Administrator"

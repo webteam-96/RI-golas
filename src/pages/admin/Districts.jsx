@@ -1,16 +1,28 @@
 import { useState } from 'react'
-import { DISHA_ZONES, DISHA_DISTRICTS, DISHA_CATEGORIES, GOALS_YEAR, PREVIOUS_YEAR, fieldsIn, prevValue } from '@/data/disha'
+import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
+import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
+import { targetValue } from '@/data/dishaTargets'
 import { coverage, dishaNumber } from '@/lib/disha'
 import { LevelBanner, Card, Bar, DataNote } from '@/components/Bits'
 
 const zoneName = (id) => DISHA_ZONES.find((z) => z.id === id)?.name ?? '—'
 
+const attainmentOf = (d) => {
+  const scored = REPORT_FIELDS
+    .map((f) => ({ a: achievedFor(f, d), t: targetValue(d.id, f.id) }))
+    .filter((r) => r.a != null && r.t)
+  return scored.length
+    ? scored.reduce((s, r) => s + Math.min((r.a / r.t) * 100, 100), 0) / scored.length
+    : null
+}
+
 export default function AdminDistricts() {
-  const [open, setOpen] = useState(null)
   const [q, setQ] = useState('')
 
   const rows = DISHA_DISTRICTS
-    .map((d) => ({ ...d, cov: coverage(d.id) }))
+    .map((d) => ({ ...d, cov: coverage(d.id), att: attainmentOf(d) }))
     .filter((d) => d.number.includes(q.trim()) || (d.governor ?? '').toLowerCase().includes(q.trim().toLowerCase()))
 
   return (
@@ -30,7 +42,7 @@ export default function AdminDistricts() {
         }
       />
 
-      <Card title="District Governors" sub="Click a row to see the existing figures that district starts from">
+      <Card title="District Governors" sub="Click a district number to open everything it reports">
         <div className="overflow-x-auto -mx-5">
           <table className="w-full text-[13px]">
             <thead>
@@ -39,15 +51,20 @@ export default function AdminDistricts() {
                 <th className="text-left font-medium py-3 px-3">Zone</th>
                 <th className="text-left font-medium py-3 px-3">District Governor</th>
                 <th className="text-right font-medium py-3 px-3">Data on file</th>
-                <th className="text-left font-medium py-3 px-3 w-48">Coverage</th>
+                <th className="text-left font-medium py-3 px-3 w-44">Coverage</th>
+                <th className="text-right font-medium py-3 px-3">Attainment</th>
+                <th className="w-10" />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((d) => (
-                <tr key={d.id}
-                    onClick={() => setOpen(open === d.id ? null : d.id)}
-                    className={`cursor-pointer transition-colors ${open === d.id ? 'bg-royal/[0.04]' : 'hover:bg-slate-50/70'}`}>
-                  <td className="py-2.5 pl-5 font-data font-semibold text-ink">{d.number}</td>
+                <tr key={d.id} className="hover:bg-royal/[0.04] transition-colors">
+                  <td className="py-2.5 pl-5">
+                    <Link to={`/ri/districts/${d.id}`}
+                          className="font-data font-semibold text-royal hover:underline">
+                      {d.number}
+                    </Link>
+                  </td>
                   <td className="py-2.5 px-3 text-slate-500">{zoneName(d.zoneId)}</td>
                   <td className="py-2.5 px-3 text-slate-700">{d.governor ?? <span className="text-slate-300">not assigned</span>}</td>
                   <td className="py-2.5 px-3 text-right tabular-nums text-slate-600">
@@ -61,6 +78,14 @@ export default function AdminDistricts() {
                       </span>
                     </div>
                   </td>
+                  <td className="py-2.5 px-3 text-right font-data font-semibold text-slate-700">
+                    {d.att == null ? <span className="text-slate-300">—</span> : `${d.att.toFixed(0)}%`}
+                  </td>
+                  <td className="py-2.5 pr-4 text-right">
+                    <Link to={`/ri/districts/${d.id}`} className="text-slate-300 hover:text-royal inline-block">
+                      <ArrowRight size={15} />
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -68,51 +93,13 @@ export default function AdminDistricts() {
         </div>
       </Card>
 
-      {open && <DistrictDetail districtId={open} />}
-
       <div className="mt-5">
         <DataNote tone="slate">
           Coverage is how much of the {PREVIOUS_YEAR} reference data a district carries — the base its
-          {' '}{GOALS_YEAR} targets will be set against. Targets themselves are entered live.
+          {' '}{GOALS_YEAR} targets will be set against. Attainment measures those figures against the
+          placeholder targets, so it moves once real targets are entered.
         </DataNote>
       </div>
     </>
-  )
-}
-
-function DistrictDetail({ districtId }) {
-  const d = DISHA_DISTRICTS.find((x) => x.id === districtId)
-  return (
-    <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-      {DISHA_CATEGORIES.map((c) => {
-        const fields = fieldsIn(c.id).filter((f) => f.showPrev)
-        return (
-          <Card key={c.id} title={c.name} sub={`District ${d.number} · ${PREVIOUS_YEAR}`}>
-            {fields.length ? (
-              <dl className="space-y-1.5">
-                {fields.map((f) => {
-                  const v = dishaNumber(prevValue(d.id, f.id), f.unit)
-                  return (
-                    <div key={f.id} className="flex items-baseline justify-between gap-3 text-[12px]">
-                      <dt className="text-slate-500 leading-snug">
-                        <span className="text-slate-300 mr-1">{f.section}</span>
-                        {f.label}
-                      </dt>
-                      <dd className={`font-data font-semibold whitespace-nowrap ${v ? 'text-ink' : 'text-slate-300'}`}>
-                        {v ?? '—'}
-                      </dd>
-                    </div>
-                  )
-                })}
-              </dl>
-            ) : (
-              <p className="text-[12px] text-slate-400 py-4 text-center">
-                Entered live — nothing pre-loaded for this category.
-              </p>
-            )}
-          </Card>
-        )
-      })}
-    </div>
   )
 }
