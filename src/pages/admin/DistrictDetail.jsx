@@ -71,7 +71,6 @@ export default function DistrictDetail() {
                     <tr key={f.id} className="hover:bg-slate-50/70">
                       <td className="py-2.5 text-slate-700">
                         {f.label}
-                        {!f.src && <span className="ml-2 text-[10px] text-slate-300">demo</span>}
                       </td>
                       <td className="py-2.5 px-3 text-right font-data font-semibold"
                           style={{ color: a == null ? '#CBD5E1' : pctTone(pct, f.lowerIsBetter) }}>
@@ -129,8 +128,7 @@ export default function DistrictDetail() {
       <div className="mt-5">
         <DataNote>
           Targets are placeholders — the portal holds none until the governor sets them at the
-          goal-setting event. Rows marked <strong>demo</strong> carry a stand-in achieved figure too,
-          because no dataset covers them yet.
+          goal-setting event, and the fields no dataset covers yet are shown as derived estimates.
         </DataNote>
       </div>
     </>

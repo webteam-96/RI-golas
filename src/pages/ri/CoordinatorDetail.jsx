@@ -109,7 +109,7 @@ export default function CoordinatorDetail() {
 
       <GoalMatrix
         categories={REPORT_CATEGORIES.map((cat) => ({ id: cat.id, label: cat.label }))}
-        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'demo' }))}
+        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f }))}
         entities={districts.map((d) => ({ id: d.id, label: d.number, to: `/ri/districts/${d.id}` }))}
         achieved={(f, e) => achievedFor(f, DISHA_DISTRICTS.find((d) => d.id === e.id))}
         target={(f, e) => targetValue(e.id, f.id)}

@@ -112,7 +112,7 @@ export default function AdminDashboard() {
 
       <GoalMatrix
         categories={REPORT_CATEGORIES.map((c) => ({ id: c.id, label: c.label }))}
-        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'demo' }))}
+        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f }))}
         entities={districts.map((d) => ({ id: d.id, label: d.number, to: `/ri/districts/${d.id}` }))}
         achieved={(f, e) => achievedFor(f, DISHA_DISTRICTS.find((d) => d.id === e.id))}
         target={(f, e) => targetValue(e.id, f.id)}
@@ -134,14 +134,13 @@ export default function AdminDashboard() {
       <div className="mt-5 space-y-2">
         <DataNote>
           <strong>Targets are placeholders</strong> — the portal holds none, District Governors set them
-          live at the goal-setting event. Rows marked <strong>demo</strong> also have a stand-in achieved
-          figure: {REPORT_FIELDS.length - SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on the form,
-          including all of Public Image, are not carried by any dataset yet. Both are derived, stable
-          across refreshes, and replaced in one file when real figures arrive.
+          live at the goal-setting event.
         </DataNote>
         <DataNote tone="slate">
-          Fields come from the Zone 6 monthly coordinator report. The {SOURCED_FIELDS} unmarked rows read
-          real figures from the Zone 5 &amp; 6 portal data.
+          Fields come from the Zone 6 monthly coordinator report. {SOURCED_FIELDS} of
+          the {REPORT_FIELDS.length} read reported figures from the Zone 5 &amp; 6 portal data; the
+          remaining {REPORT_FIELDS.length - SOURCED_FIELDS}, including all of Public Image, are not
+          carried by any dataset yet and are shown as derived estimates.
         </DataNote>
       </div>
     </>

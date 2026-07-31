@@ -29,7 +29,7 @@ export default function DistrictGoals() {
 
       <ReportGoalForm
         categories={REPORT_CATEGORIES}
-        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'demo' }))}
+        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f }))}
         scopeKey={`district:${d.id}`}
         achieved={(f) => achievedFor(f, d)}
         target={(f) => targetValue(d.id, f.id)}

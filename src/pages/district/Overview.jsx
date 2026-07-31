@@ -52,7 +52,7 @@ export default function DistrictOverview() {
       {/* This district against the rest of its zone */}
       <GoalMatrix
         categories={REPORT_CATEGORIES.map((c) => ({ id: c.id, label: c.label }))}
-        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'demo' }))}
+        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f }))}
         entities={zoneDistricts.map((x) => ({
           id: x.id,
           label: x.number === d.number ? `${x.number} ●` : x.number,
@@ -92,8 +92,8 @@ export default function DistrictOverview() {
 
       <div className="mt-5">
         <DataNote>
-          Targets are placeholders until the governor sets them at the goal-setting event. Rows marked
-          <strong> demo</strong> carry a stand-in achieved figure too, because no dataset covers them yet.
+          Targets are placeholders until the governor sets them at the goal-setting event, and the
+          fields no dataset covers yet are shown as derived estimates.
         </DataNote>
       </div>
     </>
