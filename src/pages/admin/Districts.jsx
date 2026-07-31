@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
-import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
 import { targetValue } from '@/data/dishaTargets'
 import { coverage, dishaNumber } from '@/lib/disha'
@@ -95,9 +95,9 @@ export default function AdminDistricts() {
 
       <div className="mt-5">
         <DataNote tone="slate">
-          Coverage is how much of the {PREVIOUS_YEAR} reference data a district carries — the base its
-          {' '}{GOALS_YEAR} targets will be set against. Attainment measures those figures against the
-          placeholder targets, so it moves once real targets are entered.
+          Coverage is how much of the reference data a district carries — the base its {GOALS_YEAR}{' '}
+          targets are set against. Attainment measures those figures against the placeholder targets,
+          so it moves once real targets are entered.
         </DataNote>
       </div>
     </>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Star } from 'lucide-react'
-import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR, districtsIn } from '@/data/disha'
+import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, districtsIn } from '@/data/disha'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
 import { targetValue } from '@/data/dishaTargets'
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
              sub={REPORT_CATEGORIES.map((c) => c.label).join(' · ')} />
         <Kpi label="Fields on the form" value={REPORT_FIELDS.length} tone="purple"
              sub={`${SOURCED_FIELDS} with data behind them`} />
-        <Kpi label="Reporting period" value={PREVIOUS_YEAR} tone="slate" sub={`targets for ${GOALS_YEAR}`} />
+        <Kpi label="Rotary Year" value={GOALS_YEAR} tone="slate" sub="achieved against target" />
       </div>
 
       {/* Achievement — the wheel fills as districts close on their targets */}

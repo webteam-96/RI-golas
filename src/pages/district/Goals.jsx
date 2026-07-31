@@ -1,5 +1,5 @@
 import { useParams, Navigate } from 'react-router-dom'
-import { DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { DISHA_DISTRICTS, GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, fieldsInCategory, achievedFor } from '@/data/reportFields'
 import { targetValue } from '@/data/dishaTargets'
 import { useGoals } from '@/context/GoalsProvider'
@@ -38,7 +38,7 @@ export default function DistrictGoals() {
 
       <div className="mt-5">
         <DataNote>
-          Achieved figures start from the {PREVIOUS_YEAR} data on file. Anything typed over one is
+          Achieved figures start from the data on file. Anything typed over one is
           highlighted amber so it is never mistaken for source data.
         </DataNote>
       </div>

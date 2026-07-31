@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { ArrowLeft, Star } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
-import { DISHA_DISTRICTS, districtsIn, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { DISHA_DISTRICTS, districtsIn, GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
 import { targetValue } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
@@ -115,7 +115,7 @@ export default function CoordinatorDetail() {
         target={(f, e) => targetValue(e.id, f.id)}
         format={dishaNumber}
         title={`${c.name} — districts`}
-        sub={`${PREVIOUS_YEAR} figures against ${GOALS_YEAR} targets`}
+        sub={`RY ${GOALS_YEAR} · achieved against target`}
       />
 
       <div className="mt-5">

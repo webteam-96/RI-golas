@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Download, FileSpreadsheet } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
-import { DISHA_DISTRICTS, districtsIn, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { DISHA_DISTRICTS, districtsIn, GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
 import { targetValue } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
@@ -208,7 +208,7 @@ export default function MonthlyReport() {
             <div className={`${input} text-slate-700 max-w-sm`}>{coordinator}</div>
           </Field>
           <p className="text-[11px] text-slate-400 mt-3">
-            {PREVIOUS_YEAR} figures against {GOALS_YEAR} targets · {districts.length} district
+            Rotary Year {GOALS_YEAR} · {districts.length} district
             {districts.length > 1 ? 's' : ''} covered.
           </p>
         </Card>

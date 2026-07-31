@@ -1,9 +1,9 @@
 // Zone 6 hierarchy: RI Director -> Zone -> District -> Club.
 // There is deliberately no Assistant Governor level.
 
-export const RY = '2025-26'
-// The Foundation workbook is dated March 2026 = month 9 of RY 2025-26. Pace-based goal
-// status (lib/rollup.js) is meaningless if this drifts from the data's as-of date.
+export const RY = '2026-27'
+// Pace-based goal status (lib/rollup.js) reads this as months into the Rotary Year. It only
+// drives the legacy Zone-role pages; the report views measure against a target, not a pace.
 export const MONTHS_ELAPSED = 9
 export const DATA_AS_OF = 'March 2026'
 

@@ -1,7 +1,7 @@
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { CLUBS } from '@/data/clubs'
-import { GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES } from '@/data/reportFields'
 import { CLUB_FIELDS, clubFieldsIn, clubCategories, clubAchieved, clubTarget } from '@/data/clubFigures'
 import { clubsIn } from '@/lib/rollup'
@@ -67,7 +67,7 @@ export default function ClubOverview() {
         target={(f, e) => clubTarget(e.id, f.id)}
         format={dishaNumber}
         title={club.name}
-        sub={`${PREVIOUS_YEAR} figures against ${GOALS_YEAR} targets`}
+        sub={`RY ${GOALS_YEAR} · achieved against target`}
       />
 
       <Card className="mt-5" title="Against the rest of the district"

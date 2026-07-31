@@ -1,6 +1,6 @@
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR, districtsIn } from '@/data/disha'
+import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, districtsIn } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
 import { targetValue } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
@@ -31,7 +31,7 @@ export default function DistrictDetail() {
       <LevelBanner
         eyebrow={`RI Director Office · ${zone?.name} · ${GOALS_YEAR}`}
         title={`District ${d.number}`}
-        sub={`${d.governor ?? 'Governor not assigned'} · ${PREVIOUS_YEAR} figures against ${GOALS_YEAR} targets`}
+        sub={`${d.governor ?? 'Governor not assigned'} · RY ${GOALS_YEAR} · achieved against target`}
         right={
           <Link to="/ri/districts"
                 className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-white/15 border border-white/30 hover:bg-white/25">

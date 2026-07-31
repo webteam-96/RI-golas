@@ -1,4 +1,4 @@
-import { ZONE, DISTRICTS, DATA_AS_OF, RY } from '@/data/zone6'
+import { ZONE, DISTRICTS, RY } from '@/data/zone6'
 import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
 import { AREAS, areaLead, shortLabel } from '@/data/headline'
 import { actualFor, clubsIn } from '@/lib/rollup'
@@ -22,7 +22,7 @@ export default function ZoneOverview() {
       <LevelBanner
         eyebrow={`Zone ${ZONE.number} · ${DISTRICTS.length} districts`}
         title={ZONE.name}
-        sub={`RRFC ${ZONE.rrfc.name} (D ${ZONE.rrfc.homeDistrict}) · ${ZONE.coordinators.length} ARRFCs · RY ${RY}, data as of ${DATA_AS_OF}`}
+        sub={`RRFC ${ZONE.rrfc.name} (D ${ZONE.rrfc.homeDistrict}) · ${ZONE.coordinators.length} ARRFCs · RY ${RY}`}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-4">
