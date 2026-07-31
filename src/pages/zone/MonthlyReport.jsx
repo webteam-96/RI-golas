@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, Send, FileSpreadsheet } from 'lucide-react'
+import { Download, FileSpreadsheet } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
 import { DISHA_DISTRICTS, districtsIn, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
@@ -26,7 +26,6 @@ const input = 'w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm bg-
 export default function MonthlyReport() {
   const [coordinator, setCoordinator] = useState(ZONE.rrfc.name)
   const [role, setRole] = useState('RRFC')
-  const [assistant, setAssistant] = useState('')
   const [month, setMonth] = useState('March 2026')
   const [free, setFree] = useState({ challenges: '', support: '', plan: '' })
   const [toast, setToast] = useState(null)
@@ -62,16 +61,10 @@ export default function MonthlyReport() {
         sub={`${ZONE.name} · due by the 5th of each month · one form per coordinator`}
         right={
           <div className="flex flex-wrap gap-2">
-            <Btn onClick={() => say('Draft saved.')}>Save Draft</Btn>
             <Btn onClick={() => window.print()}><Download size={13} /> Export PDF</Btn>
             <Btn onClick={() => say('Excel export would carry the district columns and field codes.')}>
               <FileSpreadsheet size={13} /> Export Excel
             </Btn>
-            <button onClick={() => say('Report submitted to the RI Director office.')}
-                    className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg text-ink"
-                    style={{ background: '#F7A81B' }}>
-              <Send size={13} /> Submit
-            </button>
           </div>
         }
       />
@@ -97,9 +90,6 @@ export default function MonthlyReport() {
                 {ZONE.coordinators.map((c) => <option key={c.id}>{c.name}</option>)}
               </select>
             </Field>
-            <Field label="Assistant coordinator (if any)">
-              <input value={assistant} onChange={(e) => setAssistant(e.target.value)} placeholder="—" className={input} />
-            </Field>
             <Field label="District(s) covered" auto>
               <div className={`${input} bg-blue-50/70 border-blue-200 font-data text-[12px]`}>
                 {districts.map((d) => d.number).join(' · ')}
@@ -109,9 +99,6 @@ export default function MonthlyReport() {
               <select value={month} onChange={(e) => setMonth(e.target.value)} className={input}>
                 {MONTHS.map((m) => <option key={m}>{m}</option>)}
               </select>
-            </Field>
-            <Field label="Date submitted" auto>
-              <div className={`${input} bg-blue-50/70 border-blue-200 text-slate-500`}>auto on submit</div>
             </Field>
           </div>
           {selected && (
@@ -217,14 +204,9 @@ export default function MonthlyReport() {
         ))}
 
         <Card>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Submitted by (name & signature)">
-              <div className={`${input} text-slate-700`}>{coordinator}</div>
-            </Field>
-            <Field label="Date submitted">
-              <div className={`${input} text-slate-500`}>auto on submit</div>
-            </Field>
-          </div>
+          <Field label="Submitted by (name & signature)">
+            <div className={`${input} text-slate-700 max-w-sm`}>{coordinator}</div>
+          </Field>
           <p className="text-[11px] text-slate-400 mt-3">
             {PREVIOUS_YEAR} figures against {GOALS_YEAR} targets · {districts.length} district
             {districts.length > 1 ? 's' : ''} covered.
