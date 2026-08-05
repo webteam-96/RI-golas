@@ -5,7 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import RoleSwitcher from './RoleSwitcher'
 import Breadcrumb from './Breadcrumb'
-import { RY } from '@/data/zone6'
+import { GOALS_YEAR } from '@/data/disha'
 
 /**
  * One layout for all four levels, parameterised. Four near-identical shells would be four
@@ -66,7 +66,7 @@ export default function Shell({ nav, titles, chip, name, role, crumbs, fallbackT
 
       <Separator className="bg-white/[0.08] mx-4" />
       <div className="px-4 py-3.5">
-        <p className="eyebrow text-slate-500">Rotary Year {RY}</p>
+        <p className="eyebrow text-slate-500">Rotary Year {GOALS_YEAR}</p>
       </div>
     </div>
   )
@@ -90,7 +90,8 @@ export default function Shell({ nav, titles, chip, name, role, crumbs, fallbackT
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white/90 backdrop-blur border-b border-slate-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0 gap-4">
+        {/* no-print: the app chrome is not part of the printed report. See @media print in index.css. */}
+        <header className="no-print bg-white/90 backdrop-blur border-b border-slate-200 px-4 sm:px-6 h-16 flex items-center justify-between flex-shrink-0 gap-4">
           <div className="flex items-center gap-3 min-w-0">
             <button className="lg:hidden p-2 -ml-1 rounded-lg text-slate-500 hover:bg-slate-100" onClick={() => setOpen(true)}>
               <Menu size={20} />

@@ -172,6 +172,9 @@ export const STATUS_META = {
   atrisk:   { label: 'At Risk',  color: '#FF7600', cls: 'bg-[#FF7600]/10 text-[#B85400] border-[#FF7600]/25' },
   behind:   { label: 'Behind',   color: '#C8102E', cls: 'bg-[#C8102E]/10 text-[#9B0C23] border-[#C8102E]/25' },
   nodata:   { label: 'No data',  color: '#B5B5B5', cls: 'bg-slate-100 text-slate-500 border-slate-200' },
+  // A reported figure with no target yet is not missing data — the goal-setting event simply
+  // has not happened for that row. Same calm grey, different sentence.
+  notset:   { label: 'No target', color: '#B5B5B5', cls: 'bg-slate-100 text-slate-500 border-slate-200' },
 }
 
 /** onTrack maps to the PDF's "On Track (Y/N)" column. */

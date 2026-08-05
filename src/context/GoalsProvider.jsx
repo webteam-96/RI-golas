@@ -1,12 +1,18 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
 import { FOUNDATION, CLUB_METRICS } from '@/data/metrics'
-import { seedTargets, goalKey } from '@/data/seedTargets'
 import { actualFor } from '@/lib/rollup'
 
-// Bumped when the seeded target set changes, so a stale localStorage copy from an earlier
-// shape does not leave half the goals blank on someone's machine.
-const KEY = 'goalseek.goals.v2'
+// v3 drops the fabricated seed the earlier versions shipped with. The bump is what clears it:
+// any machine that opened v2 has ~1,100 invented targets committed to localStorage and would
+// keep rendering them against a clean source.
+//
+// This store holds ENTRIES ONLY — an achieved figure typed over the reported one, and a row
+// comment. Targets are not here: they live in src/data/dishaTargets, which every scoring
+// screen reads. A `target` key written here would be invisible to all of them.
+const KEY = 'goalseek.goals.v3'
 const Ctx = createContext(null)
+
+export const goalKey = (scope, scopeId, metricId) => `${scope}:${scopeId}:${metricId}`
 
 export function GoalsProvider({ children }) {
   const [goals, setGoals] = useState(() => {
@@ -14,9 +20,9 @@ export function GoalsProvider({ children }) {
       const saved = localStorage.getItem(KEY)
       if (saved) return JSON.parse(saved)
     } catch {
-      /* corrupt or unavailable storage falls through to a clean seed */
+      /* corrupt or unavailable storage falls through to an empty store */
     }
-    return seedTargets()
+    return {}
   })
   const [toast, setToast] = useState(null)
 
@@ -31,7 +37,12 @@ export function GoalsProvider({ children }) {
     })
   }, [])
 
-  const reset = useCallback(() => setGoals(seedTargets()), [])
+  /** Clears one scope. A global wipe from a card showing one level would take out entries
+   *  made on another screen, which is not what a Clear button on that card offers. */
+  const clearScope = useCallback((scope, scopeId) => {
+    const prefix = `${scope}:${scopeId}:`
+    setGoals((g) => Object.fromEntries(Object.entries(g).filter(([k]) => !k.startsWith(prefix))))
+  }, [])
 
   const notify = useCallback((msg) => {
     setToast(msg)
@@ -43,7 +54,6 @@ export function GoalsProvider({ children }) {
     const stored = goals[goalKey(scope, scopeId, metricId)] ?? {}
     const computed = actualFor(metricId, scope, scopeId)
     return {
-      target: stored.target ?? null,
       actual: stored.actual ?? computed.value,
       isOverridden: stored.actual != null,
       comment: stored.comment ?? '',
@@ -53,19 +63,9 @@ export function GoalsProvider({ children }) {
     }
   }, [goals])
 
-  /** Sum of children's targets — shown beside a level's own target, never instead of it. */
-  const rolledUpTarget = useCallback((metricId, childScope, childIds) => {
-    let sum = null
-    for (const id of childIds) {
-      const t = goals[goalKey(childScope, id, metricId)]?.target
-      if (typeof t === 'number') sum = (sum ?? 0) + t
-    }
-    return sum
-  }, [goals])
-
   const value = useMemo(
-    () => ({ goals, read, patch, reset, rolledUpTarget, notify, toast, metrics: { FOUNDATION, CLUB_METRICS } }),
-    [goals, read, patch, reset, rolledUpTarget, notify, toast],
+    () => ({ goals, read, patch, clearScope, notify, toast, metrics: { FOUNDATION, CLUB_METRICS } }),
+    [goals, read, patch, clearScope, notify, toast],
   )
 
   return (

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { ZONE, DISTRICTS } from '@/data/zone6'
+import { ZONE, DISTRICTS, DATA_AS_OF } from '@/data/zone6'
 import { FOUNDATION } from '@/data/metrics'
+import { PREVIOUS_YEAR } from '@/data/disha'
 import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
 import { actualFor } from '@/lib/rollup'
 import { fmt } from '@/lib/format'
@@ -16,7 +17,7 @@ export default function FoundationGrid() {
       <LevelBanner
         eyebrow={`Zone ${ZONE.number} · all 24 metrics`}
         title="Foundation Goals Grid"
-        sub="Same shape as the Foundation goals workbook — metrics down, districts across"
+        sub={`Same shape as the Foundation goals workbook — metrics down, districts across. Figures as reported at ${DATA_AS_OF}, within ${PREVIOUS_YEAR}.`}
       />
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -73,9 +74,11 @@ export default function FoundationGrid() {
                       )
                     })}
                     <td className="py-2 px-3 text-right tabular-nums font-bold text-[#003DA5] bg-blue-50/60">
-                      {m.unit === 'yesno'
-                        ? `${zoneVal.value ?? 0} of ${zoneVal.total}`
-                        : fmt(zoneVal.value, m.unit)}
+                      {/* A column nobody answered is not nine districts answering No, so it
+                          gets the same dash as a blank cell rather than "0 of 9". */}
+                      {m.unit !== 'yesno' ? fmt(zoneVal.value, m.unit)
+                        : zoneVal.reporting ? `${zoneVal.value} of ${zoneVal.total}`
+                        : <span className="text-slate-300 font-normal" title="not collected">—</span>}
                     </td>
                   </tr>
                 )

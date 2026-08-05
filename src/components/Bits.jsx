@@ -112,11 +112,23 @@ export function Coverage({ reporting, total }) {
 }
 
 export function Bar({ value, max, color = '#003DA5', height = 'h-1.5' }) {
-  const w = max > 0 ? Math.min((value / max) * 100, 100) : 0
+  // Nothing to plot must not read as everything achieved: (undefined / max) is NaN,
+  // Math.min(NaN, 100) is NaN, and CSS drops a NaN width — leaving the fill at its natural
+  // full width. Guard the value, and drop the fill entirely rather than sizing it to zero.
+  const known = Number.isFinite(value) && max > 0
+  // A negative value fails the same way for the same reason: 'width: -90%' is invalid, CSSOM
+  // drops it, and the track fills. Net change is negative in 8 of the 46 clubs, so the worst
+  // row would otherwise paint the picture of a completed goal. Floor as well as ceiling.
+  const pct = known ? Math.max(0, Math.min((value / max) * 100, 100)) : 0
   return (
-    <div className={`bg-slate-100 rounded-full overflow-hidden ${height}`}>
-      <div className={`${height} rounded-full transition-all duration-700 ease-out`}
-           style={{ width: `${w}%`, background: color }} />
+    // A hatched track says "not known"; a measured zero keeps the plain flat track, so the
+    // two cannot be read as the same thing.
+    <div className={`rounded-full overflow-hidden ${height} ${known ? 'bg-slate-100' : 'bg-slate-50'}`}
+         style={known ? undefined : { backgroundImage: 'repeating-linear-gradient(135deg,#E2E8F0 0 2px,transparent 2px 5px)' }}>
+      {known && (
+        <div className={`${height} rounded-full transition-all duration-700 ease-out`}
+             style={{ width: `${pct}%`, background: color }} />
+      )}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { DISHA_FIELDS, DISHA_DISTRICTS, PREVIOUS, prevValue } from '../data/disha.js'
+import { DISHA_FIELDS, prevValue } from '../data/disha.js'
 
 /** Fields a district actually fills in. Read-only reference rows and free text are not targets. */
 export const TARGET_FIELDS = DISHA_FIELDS.filter((f) => f.isTarget && f.dataType !== 'text')
@@ -26,16 +26,6 @@ export function coverage(districtId) {
   const prevFields = DISHA_FIELDS.filter((f) => f.showPrev)
   const filled = prevFields.filter((f) => prevValue(districtId, f.id) != null).length
   return { filled, total: prevFields.length, pct: prevFields.length ? (filled / prevFields.length) * 100 : 0 }
-}
-
-export function zoneStats(zoneId) {
-  const ds = DISHA_DISTRICTS.filter((d) => d.zoneId === zoneId)
-  const cov = ds.map((d) => coverage(d.id))
-  return {
-    districts: ds.length,
-    withData: cov.filter((c) => c.filled > 0).length,
-    pct: ds.length ? cov.reduce((s, x) => s + x.pct, 0) / ds.length : 0,
-  }
 }
 
 /** Group a category's fields under their section headings, in source order. */
@@ -75,5 +65,3 @@ export function totalFor(fieldId, districtIds) {
   }
   return sum
 }
-
-export const districtPrev = (districtId) => PREVIOUS[String(districtId)] ?? {}

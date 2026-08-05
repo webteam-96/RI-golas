@@ -2,12 +2,13 @@
 // The build passing only proves the JSX parses. This exercises every accessor the pages
 // actually call, on every record, so a missing field surfaces here and not on the projector.
 import assert from 'node:assert/strict'
+import { existsSync } from 'node:fs'
 import { CLUBS } from '../data/clubs.js'
+import * as metrics from '../data/metrics.js'
 import { FOUNDATION, CLUB_METRICS, AREAS, metricsFor, metricsInArea } from '../data/metrics.js'
 import { AREA_METRIC_IDS, AREA_LEAD, areaLead } from '../data/headline.js'
 import { ZONE, DISTRICTS } from '../data/zone6.js'
 import { actualFor, coordinatorTotal, clubsIn, achievement } from './rollup.js'
-import { seedTargets, goalKey } from '../data/seedTargets.js'
 import { areaMetricsFor, areaLeadFor } from '../data/headline.js'
 
 let n = 0
@@ -115,62 +116,33 @@ check('each area lead and column metric resolves to a real metric', () => {
   assert.deepEqual(Object.keys(AREA_LEAD).sort(), AREAS.map((a) => a.id).sort())
 })
 
-// Every level renders the same achievement block. If a scope has no seeded targets its
-// dashboard shows a page of dashes, which looks like a bug on the projector.
-check('seeded targets make every level scorable', () => {
-  const seed = seedTargets()
+// The source carries no targets — District Governors set them live at the goal-setting event —
+// so the goals store starts empty and every level must read as unscored rather than inventing
+// a bar to measure against. These two checks are the guarantee the old seed used to break.
+check('with no targets entered, nothing is scored at any level', () => {
   const score = (scope, id) => {
-    const metrics = AREAS.flatMap((a) => areaMetricsFor(scope, a.id))
-    return achievement(metrics.map((m) => ({
-      target: seed[goalKey(scope, id, m.id)]?.target ?? null,
+    const ms = AREAS.flatMap((a) => areaMetricsFor(scope, a.id))
+    return achievement(ms.map((m) => ({
+      target: null,                                  // an empty goals store: read() yields null
       actual: actualFor(m.id, scope, id).value,
       higherIsBetter: m.higherIsBetter,
     })))
   }
 
-  const ri = score('ri', 'ri')
-  assert.ok(ri.attainment > 0, 'RI has no scorable goals')
-  assert.equal(ri.scored, ri.total, 'every RI goal should be scorable')
-
-  const zone = score('zone', ZONE.id)
-  assert.ok(zone.attainment > 0, 'zone has no scorable goals')
-
-  // D3120 carries the club roster. Public Image is the only gap — the 3192 records have no
-  // such columns — so 13 of 16 must score.
-  const d3120 = score('district', '3120')
-  assert.ok(d3120.attainment > 0, 'D3120 has no scorable goals')
-  assert.equal(d3120.scored, 13, 'D3120 should score everything except the 3 Public Image goals')
-
-  // A district with no roster still scores Foundation and simply cannot score the rest.
-  const d3261 = score('district', '3261')
-  assert.ok(d3261.scored > 0, 'D3261 should still score its Foundation goals')
-  assert.ok(d3261.scored < d3261.total, 'D3261 has no clubs, so some goals must be unscored')
-
-  const club = score('club', '15766')
-  assert.ok(club.attainment > 0, 'club has no scorable goals')
-  assert.ok(club.scored >= 9, `club scored only ${club.scored} goals`)
+  for (const [scope, id] of [['ri', 'ri'], ['zone', ZONE.id], ['district', '3120'], ['district', '3261'], ['club', '15766']]) {
+    const s = score(scope, id)
+    assert.ok(s.total > 0, `${scope}/${id} has no goals at all`)
+    assert.equal(s.scored, 0, `${scope}/${id} scored ${s.scored} goals with no targets set`)
+    assert.equal(s.onTrack, 0, `${scope}/${id} called goals on track with no targets set`)
+    assert.equal(s.achieved, 0, `${scope}/${id} called goals achieved with no targets set`)
+    assert.equal(s.attainment, null, `${scope}/${id} produced an attainment figure out of nothing`)
+  }
 })
 
-// A pure proportional split gives a child contributing nothing a target of zero, which leaves
-// it unscored instead of behind — the worst performers would vanish from the average.
-check('a district contributing nothing still gets a target it can miss', () => {
-  const seed = seedTargets()
-  // D3120 reports no PHSM at all.
-  const t = seed[goalKey('district', '3120', 'phsmPaulHarrisSocietyMember')]?.target
-  assert.ok(t > 0, 'a zero-contributing district must still carry a target')
-  assert.equal(actualFor('phsmPaulHarrisSocietyMember', 'district', '3120').value, 0)
-})
-
-// A rate is not a total. Every level aims at the same percentage, not a slice of it.
-check('rate targets pass down unchanged; totals are split', () => {
-  const seed = seedTargets()
-  const zoneRate = seed[goalKey('zone', ZONE.id, 'myRotaryPct')].target
-  assert.equal(seed[goalKey('district', '3120', 'myRotaryPct')].target, zoneRate)
-  assert.equal(seed[goalKey('club', '15766', 'myRotaryPct')].target, zoneRate)
-
-  const zoneTotal = seed[goalKey('zone', ZONE.id, 'annualFund')].target
-  const dTotal = seed[goalKey('district', '3120', 'annualFund')].target
-  assert.ok(dTotal < zoneTotal, 'a district share of a total must be smaller than the zone target')
+check('no module ships a seeded target set', () => {
+  assert.ok(!existsSync(new URL('../data/seedTargets.js', import.meta.url)), 'seedTargets.js is back')
+  const seeded = Object.keys(metrics).filter((k) => /^SEED|TARGET/.test(k))
+  assert.deepEqual(seeded, [], `metrics.js exports target values: ${seeded}`)
 })
 
 check('every area lead resolves at the scope it is used in', () => {

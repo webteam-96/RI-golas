@@ -1,9 +1,13 @@
 // Zone 6 hierarchy: RI Director -> Zone -> District -> Club.
 // There is deliberately no Assistant Governor level.
 
-export const RY = '2026-27'
-// Pace-based goal status (lib/rollup.js) reads this as months into the Rotary Year. It only
-// drives the legacy Zone-role pages; the report views measure against a target, not a pace.
+// The Rotary Year lives in one place only — disha.js exports GOALS_YEAR. A second copy here
+// went out of step silently: the sidebar shows it on every route, the 14 screens read disha.js.
+// Months into the Rotary Year, read by goalStatus() in lib/rollup.js. Nothing on screen uses it
+// any more: every surface now measures a PREVIOUS_YEAR figure against a GOALS_YEAR target, and no
+// month of GOALS_YEAR has elapsed, so a pace would score a year that has not begun. Kept because
+// rollup's pace logic is still covered by its tests and is what tracking within the live year
+// will need once achieved figures for that year exist.
 export const MONTHS_ELAPSED = 9
 export const DATA_AS_OF = 'March 2026'
 

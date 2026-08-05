@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { PREVIOUS_YEAR, GOALS_YEAR } from '@/data/disha'
 import { Card } from './Bits'
 
 const OK = '#009739', WARN = '#B85400', BAD = '#C8102E', NONE = '#94A3B8'
@@ -32,6 +33,10 @@ export default function GoalMatrix({
   // The right-hand column always reads Total. It holds the same thing at every level, so
   // naming it after whatever is being summed only made it drift page to page.
   title, sub, right, entityHeading = 'Field', totalLabel = 'Total', footer,
+  // Most callers feed figures from the DISHA seed, which does state its period — hence the
+  // default. Callers reading src/data/clubs.js cannot claim it: that file carries no
+  // reporting period anywhere, so they pass a label that does not assert one.
+  achievedLabel = `Achieved in ${PREVIOUS_YEAR}`,
 }) {
   const [catId, setCatId] = useState(categories[0]?.id)
   const rows = fields(catId)
@@ -69,6 +74,12 @@ export default function GoalMatrix({
       </div>
 
       <Card title={title ?? category.label} sub={sub} right={right}>
+        {/* Every cell reads the same way, so the years are stated once for the table rather than
+            on all 27 rows. Without this the achieved figure — which is last year's reported
+            position — is read as progress made against the year the targets are for. */}
+        <p className="text-[11px] text-slate-400 mb-3">
+          {achievedLabel}, over the target being set for {GOALS_YEAR}.
+        </p>
         <div className="overflow-x-auto -mx-5">
           <table className="w-full text-[13px] border-separate border-spacing-0">
             <thead>
@@ -140,19 +151,20 @@ function Cell({ achieved, target, unit, format, zebra, lowerIsBetter }) {
   return (
     <td className={`py-3 px-3 text-right border-b border-slate-100 whitespace-nowrap ${zebra} group-hover:bg-[#EAF0FA]`}>
       {achieved == null ? (
-        <span className="text-slate-300">—</span>
+        <span className="font-data text-[13px] text-slate-300 block leading-tight">—</span>
       ) : (
-        <>
-          <span className="font-data text-[13px] font-semibold block leading-tight"
-                style={{ color: pctTone(pct, lowerIsBetter) }}>
-            {format(achieved, unit)}
-          </span>
-          {target != null && (
-            <span className="font-data text-[10px] text-slate-400 block leading-tight mt-0.5">
-              of {format(target, unit)}
-            </span>
-          )}
-        </>
+        <span className="font-data text-[13px] font-semibold block leading-tight"
+              style={{ color: pctTone(pct, lowerIsBetter) }}>
+          {format(achieved, unit)}
+        </span>
+      )}
+      {/* The target stands on its own. Most fields carry no achieved figure yet, and nesting
+          this inside the achieved branch hid every entered target behind a dash — while the
+          Total column, which sums targets separately, still printed it. */}
+      {target != null && (
+        <span className="font-data text-[10px] text-slate-400 block leading-tight mt-0.5">
+          of {format(target, unit)}
+        </span>
       )}
     </td>
   )

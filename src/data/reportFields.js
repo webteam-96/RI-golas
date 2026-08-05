@@ -74,21 +74,19 @@ export const REPORT_FIELDS = [
 export const fieldsInCategory = (catId) => REPORT_FIELDS.filter((f) => f.cat === catId)
 
 /**
- * Achieved figure. Falls back to a demo figure for the rows the datasets do not cover — the
- * whole Public Image section and a few others — so every category shows a number against its
- * target rather than a column of dashes. Demo rows are marked in the UI.
+ * Achieved figure, straight from the DISHA Zone 5 & 6 data. A field the portal does not carry
+ * returns null and renders as a dash.
  *
- * Imported lazily to keep this module free of a cycle: dishaTargets reads REPORT_FIELDS.
+ * There used to be a demo fallback here that invented figures for the thirteen unsourced rows so
+ * no category showed an empty column. It is gone: a fabricated number in a Rotary reporting
+ * screen is worse than an honest blank, because it cannot be told apart from a real one.
  */
 export function achievedFor(field, district) {
-  const real = field.get(district)
-  if (real !== null) return real
-  // eslint-disable-next-line no-use-before-define
-  return demoRef.fn ? demoRef.fn(field, district) : null
+  return field.get(district)
 }
-
-/** Wired up once by dishaTargets so the two modules can lean on each other without a cycle. */
-export const demoRef = { fn: null }
 
 /** How much of the form is backed by data — worth stating on the page rather than hiding. */
 export const SOURCED_FIELDS = REPORT_FIELDS.filter((f) => f.src).length
+
+/** The rows the portal has no column for. Named so pages can say which, not just how many. */
+export const UNSOURCED_FIELDS = REPORT_FIELDS.filter((f) => !f.src)

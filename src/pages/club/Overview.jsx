@@ -4,10 +4,10 @@ import { CLUBS } from '@/data/clubs'
 import { GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES } from '@/data/reportFields'
 import { CLUB_FIELDS, clubFieldsIn, clubCategories, clubAchieved, clubTarget } from '@/data/clubFigures'
+import { useTargetCount } from '@/data/dishaTargets'
 import { clubsIn } from '@/lib/rollup'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Kpi, Card, Bar, DataNote } from '@/components/Bits'
-import { pctTone } from '@/components/GoalMatrix'
 import GoalMatrix from '@/components/GoalMatrix'
 
 const LEAD = {
@@ -18,6 +18,7 @@ const LEAD = {
 /** One club, on the same five categories as every level above it. */
 export default function ClubOverview() {
   const { clubId } = useParams()
+  useTargetCount() // targets are entered on the Goals tab; re-render when they are
   const club = CLUBS.find((c) => c.id === clubId)
   if (!club) return <Navigate to="/ri/overview" replace />
 
@@ -25,12 +26,17 @@ export default function ClubOverview() {
   const cats = clubCategories(REPORT_CATEGORIES)
   const president = typeof club.president === 'string' ? club.president : club.president?.name
 
+  // Nothing is scored until a target exists, so both of these are empty until somebody
+  // enters one on the goals screen.
   const scored = CLUB_FIELDS
     .map((f) => ({ a: clubAchieved(f, club), t: clubTarget(club.id, f.id), f }))
     .filter((r) => r.a != null && r.t)
+  // Floored as well as capped: a net change of -9 against a target of 10 is 0% attained,
+  // not -90%. A negative here dragged the mean below zero and printed as an attainment.
   const attainment = scored.length
-    ? scored.reduce((s, r) => s + Math.min((r.a / r.t) * 100, 100), 0) / scored.length
+    ? scored.reduce((s, r) => s + Math.min(Math.max((r.a / r.t) * 100, 0), 100), 0) / scored.length
     : null
+  const anyTarget = CLUB_FIELDS.some((f) => clubTarget(club.id, f.id) != null)
 
   return (
     <>
@@ -67,7 +73,10 @@ export default function ClubOverview() {
         target={(f, e) => clubTarget(e.id, f.id)}
         format={dishaNumber}
         title={club.name}
-        sub={`RY ${GOALS_YEAR} · achieved against target`}
+        // The figures on this page come from src/data/clubs.js, which states no reporting
+        // period, so neither line names one. Only the target year is sourced.
+        sub={`Achieved as last reported · ${anyTarget ? `target ${GOALS_YEAR}` : `no target set for ${GOALS_YEAR} yet`}`}
+        achievedLabel="Achieved as last reported by the club"
       />
 
       <Card className="mt-5" title="Against the rest of the district"
@@ -80,8 +89,6 @@ export default function ClubOverview() {
             const vals = peers.map((p) => clubAchieved(f, p)).filter((v) => v != null)
             const max = Math.max(...vals, 0)
             const rank = vals.filter((v) => v > (mine ?? -1)).length + 1
-            const t = clubTarget(club.id, f.id)
-            const pct = mine != null && t ? (mine / t) * 100 : null
             return (
               <div key={id}>
                 <div className="flex items-baseline justify-between mb-1.5">
@@ -90,7 +97,12 @@ export default function ClubOverview() {
                     {mine == null ? '—' : `${dishaNumber(mine, f.unit)} · rank ${rank} of ${vals.length}`}
                   </span>
                 </div>
-                <Bar value={mine ?? 0} max={max || 1} height="h-2" color={pctTone(pct, f.lowerIsBetter)} />
+                {/* This bar is standing against the district's clubs, not attainment: its
+                    length is a share of the district's largest club. Colouring it by
+                    attainment put two different measures in one mark — the district's biggest
+                    club drew a full green bar whether or not it had met its own target. House
+                    royal throughout, so the mark says one thing. */}
+                <Bar value={mine} max={max} height="h-2" />
               </div>
             )
           })}
@@ -99,10 +111,22 @@ export default function ClubOverview() {
 
       <div className="mt-5">
         <DataNote tone="slate">
-          A club answers {CLUB_FIELDS.length} of the report&apos;s fields; the rest are district-level and
-          are not shown here. Attainment across those {scored.length} goals is{' '}
-          <strong>{attainment == null ? '—' : `${attainment.toFixed(0)}%`}</strong> against placeholder
-          targets.
+          Achieved figures are what the club last reported — the club list carries no reporting
+          period, so none is claimed; targets are being set
+          for {GOALS_YEAR}. A club answers {CLUB_FIELDS.length} of the report&apos;s fields; the rest
+          are district-level and are not shown here.{' '}
+          {/* A target can exist on a field the club has not reported, so attainment being null
+              is not the same as no target set — the two cases read differently. */}
+          {attainment != null ? (
+            <>Attainment across the {scored.length} goal{scored.length === 1 ? '' : 's'} with a
+            target set is{' '}
+            <strong>{attainment.toFixed(0)}%</strong>.</>
+          ) : anyTarget ? (
+            <>Attainment reads <strong>—</strong>: nothing has been reported against the targets
+            set so far.</>
+          ) : (
+            <>Attainment reads <strong>—</strong>: no target has been set for this club yet.</>
+          )}
         </DataNote>
       </div>
     </>

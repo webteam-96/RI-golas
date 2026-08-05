@@ -1,10 +1,11 @@
 import { useState, Fragment } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, ChevronDown, ArrowRight } from 'lucide-react'
-import { ZONE, DISTRICTS, coordinatorsForDistrict } from '@/data/zone6'
+import { ZONE, DISTRICTS, coordinatorsForDistrict, DATA_AS_OF } from '@/data/zone6'
+import { PREVIOUS_YEAR } from '@/data/disha'
 import { DISTRICT_DATA_SUBSTITUTIONS } from '@/data/foundationGoals'
 import { HEADLINE, shortLabel } from '@/data/headline'
-import { actualFor, zoneTotal, clubsIn } from '@/lib/rollup'
+import { actualFor, clubsIn } from '@/lib/rollup'
 import { fmt, usdExact, num } from '@/lib/format'
 import { LevelBanner, DataNote, EmptyState } from '@/components/Bits'
 
@@ -14,12 +15,27 @@ export default function ZoneDistricts() {
 
   const rows = DISTRICTS.filter((d) => d.id.includes(q.trim()) || d.region.toLowerCase().includes(q.trim().toLowerCase()))
 
+  // Sums the rows actually on screen. A blank district is left out of the sum rather than
+  // counted as zero, so an all-blank column totals to a dash.
+  const filteredTotal = (metricId) => {
+    let s = null
+    for (const d of rows) {
+      const v = actualFor(metricId, 'district', d.id).value
+      if (v != null) s = (s ?? 0) + v
+    }
+    return s
+  }
+
   return (
     <>
+      {/* The sidebar stamps "Rotary Year 2026-27" on every screen and nothing in this table said
+          otherwise, so $632,386 of Annual Fund read as money raised against the targets being set.
+          It is last year's reported position. Stated once in the banner rather than on all seven
+          column headers, the club sub-table and the totals row. */}
       <LevelBanner
         eyebrow={`Zone ${ZONE.number}`}
         title="Districts"
-        sub="Expand a district to see its clubs without leaving this page"
+        sub={`Figures as reported at ${DATA_AS_OF}, within ${PREVIOUS_YEAR} — not the year being set. Expand a district to see its clubs without leaving this page.`}
         right={
           <input
             value={q}
@@ -147,15 +163,19 @@ export default function ZoneDistricts() {
                 )
               })}
             </tbody>
+            {/* Totals follow the search box. Summing all nine while the table showed one district
+                put a total on screen that contradicted the rows above it. */}
             <tfoot>
               <tr className="bg-slate-100 font-bold text-slate-800 border-t-2 border-slate-300">
                 <td className="py-3 pl-5 pr-2">TOTAL</td>
-                <td className="py-3 px-2 text-xs text-slate-500 font-normal">{DISTRICTS.length} districts</td>
+                <td className="py-3 px-2 text-xs text-slate-500 font-normal">
+                  {rows.length} district{rows.length === 1 ? '' : 's'}
+                </td>
                 {HEADLINE.map((m) => (
-                  <td key={m.id} className="py-3 px-2 text-right tabular-nums">{fmt(zoneTotal(m.id), m.unit)}</td>
+                  <td key={m.id} className="py-3 px-2 text-right tabular-nums">{fmt(filteredTotal(m.id), m.unit)}</td>
                 ))}
                 <td className="py-3 px-2 text-right tabular-nums">
-                  {DISTRICTS.reduce((s, x) => s + clubsIn(x.id).length, 0)}
+                  {rows.reduce((s, x) => s + clubsIn(x.id).length, 0)}
                 </td>
                 <td />
               </tr>
@@ -167,7 +187,9 @@ export default function ZoneDistricts() {
       <div className="mt-4">
         <DataNote tone="slate">
           Club rosters are loaded for D3120 and D3030. The remaining seven districts show
-          district-level Foundation figures with no club layer beneath them yet.
+          district-level Foundation figures with no club layer beneath them yet. The club rows come
+          from the AG-module club dataset rather than the Foundation workbook, and that source
+          states no reporting period of its own.
         </DataNote>
       </div>
     </>

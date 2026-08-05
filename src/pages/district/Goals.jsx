@@ -1,11 +1,12 @@
 import { useParams, Navigate } from 'react-router-dom'
 import { DISHA_DISTRICTS, GOALS_YEAR } from '@/data/disha'
-import { REPORT_CATEGORIES, fieldsInCategory, achievedFor } from '@/data/reportFields'
+import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
 import { targetValue } from '@/data/dishaTargets'
 import { useGoals } from '@/context/GoalsProvider'
 import { LevelBanner, DataNote } from '@/components/Bits'
 import ReportGoalForm from '@/components/ReportGoalForm'
 
+/** Where a governor sets the district's targets, against the achieved figures already on file. */
 export default function DistrictGoals() {
   const { districtId } = useParams()
   const { notify } = useGoals()
@@ -17,13 +18,14 @@ export default function DistrictGoals() {
       <LevelBanner
         eyebrow={`District ${d.number} · goal entry · ${GOALS_YEAR}`}
         title={`District ${d.number} Goals`}
-        sub="Targets are fixed. Enter what the district has achieved against each one."
+        sub="Set a target for each field. Achieved is the figure already reported."
       />
 
       <div className="mb-4">
         <DataNote tone="slate">
-          The <strong>Target</strong> column is locked — it comes from the goal-setting event. Enter an
-          achieved figure and it recomputes here and on every level above.
+          Enter the <strong>Target</strong> agreed at the goal-setting event. The portal seeds none, so
+          every field starts blank and nothing is scored until a target is entered. The{' '}
+          <strong>Achieved</strong> column is the reported figure and is read-only.
         </DataNote>
       </div>
 
@@ -38,8 +40,9 @@ export default function DistrictGoals() {
 
       <div className="mt-5">
         <DataNote>
-          Achieved figures start from the data on file. Anything typed over one is
-          highlighted amber so it is never mistaken for source data.
+          The portal carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on the monthly
+          report. The remaining {REPORT_FIELDS.length - SOURCED_FIELDS}, Public Image included, are
+          not collected in it, so they read as a dash — a target can still be set against them.
         </DataNote>
       </div>
     </>

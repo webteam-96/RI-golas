@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, ChevronDown, Star } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
-import { DISHA_DISTRICTS, districtsIn } from '@/data/disha'
-import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
-import { targetValue } from '@/data/dishaTargets'
+import { DISHA_DISTRICTS, districtsIn, PREVIOUS_YEAR } from '@/data/disha'
+import { REPORT_CATEGORIES, REPORT_FIELDS, SOURCED_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
+import { targetValue, useTargetCount } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
 import { DataNote } from './Bits'
 import GoalMatrix from './GoalMatrix'
@@ -22,6 +22,11 @@ const LEAD = {
 }
 const leadField = (catId) => REPORT_FIELDS.find((f) => f.id === LEAD[catId])
 
+/** Targets set against a given set of districts. The store's own count spans every scope —
+ *  clubs and zone metrics included — and no card here scores any of those. */
+const targetsOver = (districts) =>
+  districts.reduce((n, d) => n + REPORT_FIELDS.filter((f) => targetValue(d.id, f.id)).length, 0)
+
 const sumOver = (field, districts) => {
   let s = null
   for (const d of districts) {
@@ -38,6 +43,8 @@ const sumOver = (field, districts) => {
  */
 export default function CoordinatorList() {
   const [open, setOpen] = useState(ZONE.coordinators[0].id)
+  useTargetCount()                      // re-render on entry; the numbers shown come from the zone
+  const targetsSet = targetsOver(ZONE6) // every card is a subset of the zone, so this covers them all
 
   const assigned = new Set(ZONE.coordinators.flatMap((c) => c.supports))
   const unassigned = ZONE6.filter((d) => !assigned.has(d.number))
@@ -138,7 +145,7 @@ export default function CoordinatorList() {
                     target={(f, e) => targetValue(e.id, f.id)}
                     format={dishaNumber}
                     title={`${c.name} — districts`}
-                    sub={`${districts.length} supported · achieved over target`}
+                    sub={`${districts.length} supported · ${targetsOver(districts) ? 'achieved over target where one is set' : 'figures on file, no targets set for these districts yet'}`}
                   />
                 </div>
               )}
@@ -157,6 +164,16 @@ export default function CoordinatorList() {
             covers {unassigned.length > 1 ? 'them' : 'it'} as part of the zone, but no assistant is named.
           </DataNote>
         )}
+        <DataNote tone="slate">
+          {/* The banner above ends on the goal year and no card carries a year of its own, so the
+              five figures on each would otherwise be read as goal-year money. They are last year's. */}
+          The five figures on each card are what those districts reported for {PREVIOUS_YEAR}.{' '}
+          {targetsSet === 0
+            ? 'District Governors set their targets at the goal-setting event, and none are set against these districts yet, so nothing on a card is progress towards a goal. '
+            : `${targetsSet} target${targetsSet === 1 ? ' has' : 's have'} been entered against these districts so far; the rest are still to be set at the goal-setting event. `}
+          The portal carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on this report, and no
+          Public Image data at all, so Public Image and Projects read as a dash on every card.
+        </DataNote>
         <DataNote tone="slate">
           Zone totals sum the {ZONE6.length} districts directly, never through the coordinator rows —
           D{ZONE.rrfc.homeDistrict} is both the RRFC&apos;s home district and an ARRFC&apos;s supported

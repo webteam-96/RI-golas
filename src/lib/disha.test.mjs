@@ -5,8 +5,13 @@ import {
   PREVIOUS, prevValue, fieldsIn, districtsIn,
 } from '../data/disha.js'
 import { completion, coverage, sections, dishaNumber, totalFor, TARGET_FIELDS } from './disha.js'
-import { targetValue, DEMO_TARGETS } from '../data/dishaTargets.js'
-import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '../data/reportFields.js'
+import {
+  targetValue, targetIn, setTarget, clearTargets, getTargets, anyTargetsSet, subscribe,
+} from '../data/dishaTargets.js'
+import {
+  REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor,
+  SOURCED_FIELDS, UNSOURCED_FIELDS,
+} from '../data/reportFields.js'
 import { ZONE } from '../data/zone6.js'
 import { CLUB_FIELDS, clubFieldsIn, clubCategories, clubAchieved, clubTarget } from '../data/clubFigures.js'
 import { CLUBS } from '../data/clubs.js'
@@ -158,69 +163,97 @@ check('every field belongs to one of the four sections and carries a unit', () =
   assert.equal(grouped.length, REPORT_FIELDS.length, 'a field is missing from its section')
 })
 
-check('a sourced field reads the real figure, not a demo one', () => {
+// "dont change the fields": the catalogue is the coordinators' own form. Nothing may be added,
+// dropped or moved between sections to make a screen look fuller than the data behind it.
+check('the catalogue is 27 fields across 5 sections, 14 of them carried by the portal', () => {
+  assert.equal(REPORT_FIELDS.length, 27)
+  assert.equal(REPORT_CATEGORIES.length, 5)
+  assert.equal(SOURCED_FIELDS, 14)
+  assert.equal(UNSOURCED_FIELDS.length, 13)
+  assert.equal(SOURCED_FIELDS + UNSOURCED_FIELDS.length, REPORT_FIELDS.length)
+  assert.equal(new Set(REPORT_FIELDS.map((f) => f.id)).size, REPORT_FIELDS.length, 'duplicate field id')
+  // Public Image is not collected in the portal at all — the whole section is unsourced.
+  for (const f of fieldsInCategory('publicimage'))
+    assert.ok(UNSOURCED_FIELDS.includes(f), `${f.id} claims a Public Image source`)
+})
+
+check('a sourced field reads the real figure from the portal', () => {
   const d = DISHA_DISTRICTS.find((x) => x.number === '2981')
   const members = REPORT_FIELDS.find((f) => f.id === 'membersStart')
   assert.equal(achievedFor(members, d), 6355)          // seed-previous-year-membership
   assert.equal(members.get(d), 6355)
 })
 
-// A figure that changes on refresh is worse than no figure: the same cell must read the same
-// on every render, and every category must have something to show.
-check('demo figures are stable and cover every category', () => {
-  const d = DISHA_DISTRICTS.find((x) => x.number === '2981')
-  const erey = REPORT_FIELDS.find((f) => f.id === 'ereyPct')
-  assert.equal(erey.src, null)
-  assert.equal(erey.get(d), null, 'the raw getter still reports no dataset')
-  const first = achievedFor(erey, d)
-  assert.ok(typeof first === 'number', 'an unsourced field still shows a demo figure')
-  assert.equal(achievedFor(erey, d), first, 'the same cell must not change between reads')
-
-  for (const c of REPORT_CATEGORIES)
-    for (const f of fieldsInCategory(c.id))
-      assert.ok(achievedFor(f, d) != null, `${c.label} / ${f.id} has nothing to show`)
-})
-
-check('demo figures differ between districts and between fields', () => {
-  const f = REPORT_FIELDS.find((x) => x.id === 'mediaMentions')
-  const vals = DISHA_DISTRICTS.map((d) => achievedFor(f, d))
-  assert.ok(new Set(vals).size > 5, 'every district got the same figure')
-  const d = DISHA_DISTRICTS[0]
-  const across = ['mediaMentions', 'piEvents', 'brandReviews']
-    .map((id) => achievedFor(REPORT_FIELDS.find((x) => x.id === id), d))
-  assert.equal(new Set(across).size, across.length, 'fields share a figure')
-})
-
-// Every cell pairs an achieved figure with a target, so a target that is missing or sits below
-// what has already been achieved would read as a failure that isn't.
-check('every achieved figure has a target, pointing the right way', () => {
-  let paired = 0, lower = 0
-  for (const d of DISHA_DISTRICTS)
-    for (const f of REPORT_FIELDS) {
-      const a = achievedFor(f, d)
-      if (a == null || a === 0) continue
-      const t = targetValue(d.id, f.id)
-      assert.ok(t != null, `${d.number} / ${f.id} has an achieved figure but no target`)
-      if (f.lowerIsBetter) {
-        // Fewer terminations and closures is the goal, so the target sits below today's figure.
-        assert.ok(t <= a, `${d.number} / ${f.id}: lower-is-better target ${t} sits above achieved ${a}`)
-        lower++
-      } else {
-        assert.ok(t >= a, `${d.number} / ${f.id}: target ${t} sits below achieved ${a}`)
-      }
-      paired++
+// An earlier build filled the thirteen unsourced rows with generated figures so no column
+// looked empty. Pinned per field id, for all 23 districts, so a reintroduced fallback names
+// itself in the failure rather than passing as real data.
+check('a field the portal does not carry reads null for every district — never a number', () => {
+  assert.deepEqual(UNSOURCED_FIELDS.map((f) => f.id), [
+    'newMembers', 'terminated', 'netChange', 'clubsChartered', 'clubsClosed',
+    'newPHF', 'ereyPct',
+    'mediaMentions', 'socialGrowth', 'piEvents', 'brandReviews',
+    'serviceProjects', 'newClubsDev',
+  ])
+  for (const f of UNSOURCED_FIELDS) {
+    assert.equal(f.src, null, `${f.id} claims a source`)
+    for (const d of DISHA_DISTRICTS) {
+      assert.equal(f.get(d), null, `${f.id} / ${d.number}: the raw getter invented a figure`)
+      assert.equal(achievedFor(f, d), null, `${f.id} / ${d.number}: achievedFor invented a figure`)
     }
-  assert.ok(paired > 400, `only ${paired} cells paired`)
-  assert.ok(lower > 0, 'no lower-is-better field was exercised')
+  }
 })
 
-check('no target exists where there is nothing to measure', () => {
+check('a sourced field reads its portal cell, and stays null where the cell is blank', () => {
+  let filled = 0
+  for (const f of REPORT_FIELDS.filter((x) => x.src))
+    for (const d of DISHA_DISTRICTS) {
+      const raw = parseFloat(prevValue(d.id, f.src))
+      const a = achievedFor(f, d)
+      if (Number.isFinite(raw)) {
+        assert.equal(a, raw, `${f.id} / ${d.number} does not match portal field ${f.src}`)
+        filled++
+      } else {
+        assert.equal(a, null, `${f.id} / ${d.number}: a blank cell became ${a}`)
+      }
+    }
+  assert.equal(filled, SOURCED_FIELDS * DISHA_DISTRICTS.length,
+    'every sourced field is on file for every district')
+})
+
+console.log('\ntargets — entered at the event, none seeded')
+
+// The portal's `goals` table is created and never seeded, and every Target column in both
+// consolidated workbooks is blank. Nothing here may invent one.
+check('no district holds a target until one is entered', () => {
+  assert.equal(anyTargetsSet(), false)
+  assert.deepEqual(getTargets(), {})
   for (const d of DISHA_DISTRICTS)
     for (const f of REPORT_FIELDS)
-      if (achievedFor(f, d) == null)
-        assert.equal(targetValue(d.id, f.id), null,
-          `${d.number} / ${f.id} has a target with no achieved figure behind it`)
-  assert.ok(Object.keys(DEMO_TARGETS).length > 0)
+      assert.equal(targetValue(d.id, f.id), null, `${d.number} / ${f.id} came with a target`)
+})
+
+check('an entered target round-trips, stays in its own cell, and clears', () => {
+  const [a, b] = DISHA_DISTRICTS
+  let notified = 0
+  const stop = subscribe(() => { notified++ })
+
+  setTarget('district', a.id, 'membersStart', 6800)
+  assert.equal(targetValue(a.id, 'membersStart'), 6800)
+  assert.equal(anyTargetsSet(), true)
+  assert.equal(notified, 1, 'entry must wake the pages reading the store')
+  assert.equal(targetValue(b.id, 'membersStart'), null, 'a target leaked to another district')
+  assert.equal(targetValue(a.id, 'annualFund'), null, 'a target leaked to another field')
+  // Scoped, so club 3120-something cannot read district 3120's goal.
+  assert.equal(targetIn('club', a.id, 'membersStart'), null)
+
+  setTarget('district', a.id, 'membersStart', null)
+  assert.equal(targetValue(a.id, 'membersStart'), null, 'clearing one cell must remove it')
+
+  setTarget('district', a.id, 'annualFund', 100000)
+  clearTargets()
+  assert.deepEqual(getTargets(), {})
+  assert.equal(anyTargetsSet(), false)
+  stop()
 })
 
 console.log('\nclub level')
@@ -243,23 +276,25 @@ check('every club category has at least one field, and empty ones are dropped', 
   for (const c of dropped) assert.equal(clubFieldsIn(c.id).length, 0)
 })
 
-check('club figures read the club record, and every one has a target', () => {
+check('club figures read the club record, and no club starts with a target', () => {
   const c = CLUBS.find((x) => x.id === '15766')          // Thane, from district3192
   const members = CLUB_FIELDS.find((f) => f.id === 'membersStart')
   assert.equal(clubAchieved(members, c), c.membership.current)
 
-  let paired = 0
+  let filled = 0
   for (const club of CLUBS)
     for (const f of CLUB_FIELDS) {
-      const a = clubAchieved(f, club)
-      if (a == null || a === 0) continue
-      const t = clubTarget(club.id, f.id)
-      assert.ok(t != null, `${club.name} / ${f.id} has a figure but no target`)
-      if (f.lowerIsBetter) assert.ok(t <= a)
-      else assert.ok(t >= a, `${club.name} / ${f.id}: target ${t} below achieved ${a}`)
-      paired++
+      assert.equal(clubTarget(club.id, f.id), null, `${club.name} / ${f.id} came with a target`)
+      if (clubAchieved(f, club) != null) filled++
     }
-  assert.ok(paired > 200, `only ${paired} club cells paired`)
+  assert.ok(filled > 200, `only ${filled} club figures read`)
+
+  const other = CLUBS.find((x) => x.id !== c.id)
+  setTarget('club', c.id, 'membersStart', 60)
+  assert.equal(clubTarget(c.id, 'membersStart'), 60)
+  assert.equal(clubTarget(other.id, 'membersStart'), null, 'a target leaked to another club')
+  clearTargets()
+  assert.equal(clubTarget(c.id, 'membersStart'), null)
 })
 
 console.log(`\n${n} checks passed\n`)

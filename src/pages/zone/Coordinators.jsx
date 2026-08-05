@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ZONE, ARRFC_ROLE_LONG, signedInCoordinator } from '@/data/zone6'
-import { DISHA_DISTRICTS, GOALS_YEAR } from '@/data/disha'
-import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
-import { targetValue } from '@/data/dishaTargets'
+import { DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
+import { targetValue, useTargetCount } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Kpi, Card, Bar, DataNote } from '@/components/Bits'
 import GoalMatrix from '@/components/GoalMatrix'
@@ -15,13 +15,17 @@ const LEAD = {
 }
 const leadField = (catId) => REPORT_FIELDS.find((f) => f.id === LEAD[catId])
 
-/** Mean attainment over one district's fields, each capped at 100. */
+/**
+ * Mean attainment over one district's fields, each held between 0 and 100. Null until targets
+ * are entered — with nothing to divide by there is no percentage to show. The floor matters as
+ * much as the cap: a field that fell backwards is 0% attained, not a negative percentage.
+ */
 function districtPct(d) {
   const p = []
   for (const f of REPORT_FIELDS) {
     const a = achievedFor(f, d)
     const t = targetValue(d.id, f.id)
-    if (a != null && t) p.push(Math.min((a / t) * 100, 100))
+    if (a != null && t) p.push(Math.min(Math.max((a / t) * 100, 0), 100))
   }
   return p.length ? p.reduce((s, v) => s + v, 0) / p.length : null
 }
@@ -32,6 +36,8 @@ function districtPct(d) {
  */
 export default function ZoneCoordinators() {
   const c = signedInCoordinator()
+  useTargetCount() // targets are entered elsewhere; re-render when they are. The count it returns
+                   // is every scope's, not this coordinator's, so the note below uses `scores`.
   const districts = c.supports.map(byNumber).filter(Boolean)
 
   const scores = districts.map(districtPct).filter((v) => v != null)
@@ -58,9 +64,11 @@ export default function ZoneCoordinators() {
         <Kpi label="Districts" value={districts.length} tone="royal" sub="supported" />
         {REPORT_CATEGORIES.map((cat) => {
           const f = leadField(cat.id)
+          const v = sumOver(f)
           return (
-            <Kpi key={cat.id} label={cat.label} sub={f?.label}
-                 value={dishaNumber(sumOver(f), f?.unit) ?? '—'}
+            <Kpi key={cat.id} label={cat.label}
+                 sub={v == null ? `${f?.label} · not collected` : f?.label}
+                 value={dishaNumber(v, f?.unit) ?? '—'}
                  tone={cat.id === 'foundation' ? 'gold' : cat.id === 'membership' ? 'blue'
                        : cat.id === 'publicimage' ? 'purple' : cat.id === 'projects' ? 'green' : 'royal'} />
           )
@@ -78,7 +86,12 @@ export default function ZoneCoordinators() {
                   {d.number}
                 </span>
                 <span className="flex-1 min-w-0 text-[12px] text-slate-500 truncate">{d.governor ?? '—'}</span>
-                <span className="w-40"><Bar value={pct ?? 0} max={100} /></span>
+                <span className="w-40">
+                  {/* No target, no bar — a rail at zero width reads as a district on nothing */}
+                  {pct == null
+                    ? <span className="text-[11px] text-slate-400">no target set</span>
+                    : <Bar value={pct} max={100} />}
+                </span>
                 <span className="w-12 text-right font-data text-[12px] font-semibold text-ink">
                   {pct == null ? '—' : `${pct.toFixed(0)}%`}
                 </span>
@@ -86,29 +99,42 @@ export default function ZoneCoordinators() {
             )
           })}
         </div>
-        {attainment != null && (
-          <p className="text-[11px] text-slate-400 mt-3">
-            Mean across {scores.length} district{scores.length > 1 ? 's' : ''}:{' '}
-            <strong className="text-slate-600">{attainment.toFixed(1)}%</strong>
-          </p>
-        )}
+        <p className="text-[11px] text-slate-400 mt-3">
+          {attainment == null ? (
+            'Attainment is shown once targets are set against these districts.'
+          ) : (
+            <>
+              Mean across {scores.length} district{scores.length > 1 ? 's' : ''}:{' '}
+              <strong className="text-slate-600">{attainment.toFixed(1)}%</strong>
+            </>
+          )}
+        </p>
       </Card>
 
       <GoalMatrix
         categories={REPORT_CATEGORIES.map((cat) => ({ id: cat.id, label: cat.label }))}
-        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f }))}
+        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'not collected' }))}
         entities={districts.map((d) => ({ id: d.id, label: d.number, to: `/district/${d.number}/overview` }))}
         achieved={(f, e) => achievedFor(f, DISHA_DISTRICTS.find((d) => d.id === e.id))}
         target={(f, e) => targetValue(e.id, f.id)}
         format={dishaNumber}
         title="My districts"
-        sub={`${districts.length} supported · achieved over target`}
+        sub={`${districts.length} supported · achieved ${PREVIOUS_YEAR}, targets for ${GOALS_YEAR} once set`}
       />
 
-      <div className="mt-5">
+      <div className="mt-5 space-y-2">
+        <DataNote>
+          The figures here are what these districts achieved in {PREVIOUS_YEAR}; targets are set by
+          District Governors for {GOALS_YEAR} at the goal-setting event.{' '}
+          {scores.length
+            ? `Attainment is showing for ${scores.length} of the ${districts.length} districts here; the rest read as a dash.`
+            : 'None are scored yet, so every attainment figure reads as a dash.'}
+        </DataNote>
         <DataNote tone="slate">
           This is {c.name}&apos;s view — the {districts.length} districts they support. The full Zone{' '}
-          {ZONE.number} team, and the zone totals, sit with the RI Director.
+          {ZONE.number} team, and the zone totals, sit with the RI Director. The portal carries{' '}
+          {SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on the monthly report; Public Image
+          is not collected in it at all.
         </DataNote>
       </div>
     </>

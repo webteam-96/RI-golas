@@ -1,5 +1,5 @@
-import { CLUBS } from './clubs.js'
 import { REPORT_FIELDS } from './reportFields.js'
+import { targetIn } from './dishaTargets.js'
 
 /**
  * The monthly report's fields read against a single club.
@@ -43,31 +43,12 @@ export function clubAchieved(field, club) {
   return fn ? num(fn(club)) : null
 }
 
-// Same uplift idea as the district targets: a club is asked to grow on its own figure.
-const UPLIFT = {
-  membersStart: 1.08, womenMembers: 1.18, newMembers: 1.20, netChange: 1.30,
-  annualFund: 1.20, polioPlus: 1.25, endowment: 1.15, totalGiving: 1.18,
-  piEvents: 1.30, socialGrowth: 1.35, mediaMentions: 1.30,
-  serviceProjects: 1.20, rotaractClubs: 1.25, interactClubs: 1.25,
-  terminated: 0.85,
-}
-
-const round = (n) => (n >= 1000 ? Math.round(n / 100) * 100 : Math.max(1, Math.ceil(n)))
-
-/** clubId -> fieldId -> target. Demo, like every other target in the prototype. */
-export const CLUB_TARGETS = (() => {
-  const out = {}
-  for (const c of CLUBS)
-    for (const f of CLUB_FIELDS) {
-      const base = clubAchieved(f, c)
-      if (base === null || base === 0) continue
-      out[c.id] ??= {}
-      out[c.id][f.id] = round(base * (UPLIFT[f.id] ?? 1.10))
-    }
-  return out
-})()
-
-export const clubTarget = (clubId, fieldId) => CLUB_TARGETS[clubId]?.[fieldId] ?? null
+/**
+ * Target for a club field. Same store as the districts', same rule: null until a president
+ * sets it. Club targets used to be the club's own figure times an uplift, which measured
+ * nothing except the uplift.
+ */
+export const clubTarget = (clubId, fieldId) => targetIn('club', clubId, fieldId)
 
 /** Roll a club field up to a district — the sum across its clubs, blanks left out. */
 export function districtFromClubs(field, clubs) {

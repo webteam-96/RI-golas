@@ -18,14 +18,17 @@ export default function ClubGoals() {
       <LevelBanner
         eyebrow={`District ${club.districtId} · goal entry · ${GOALS_YEAR}`}
         title={`Goals — ${club.name}`}
-        sub="Targets are fixed. Enter what your club has achieved against each one."
+        sub="Set a target against each goal. The achieved figure is what the club has reported."
       />
 
       <div className="mb-4">
         <DataNote tone="slate">
-          The <strong>Target</strong> column is locked. Enter an achieved figure and save — the district,
-          zone and RI views recompute immediately. Anything typed over the reported figure is highlighted
-          amber so it is never mistaken for source data.
+          The club sets its own targets, so every <strong>Target</strong> starts blank — enter one
+          and the progress and status columns fill in here and on the district&apos;s Clubs page.
+          A club target does not roll into the district&apos;s own goals: those are set by the
+          governor against the district&apos;s figures, not summed from its clubs.{' '}
+          <strong>Achieved</strong> is the club&apos;s reported figure and reads &mdash; where nothing
+          has been reported.
         </DataNote>
       </div>
 

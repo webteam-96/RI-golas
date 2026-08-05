@@ -115,3 +115,32 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* "Export PDF" is window.print(). The shell is a fixed-height flex viewport whose <main> does its
+   own scrolling, so on paper the browser printed one screen-tall slice and dropped everything
+   below the fold along with the horizontally-scrolled district columns. Every clip boundary is
+   released here rather than in the markup, so it costs nothing on screen. Landscape because the
+   report table carries a column per district. */
+@media print {
+  @page { size: landscape; margin: 12mm; }
+
+  /* Navigation, role controls and export buttons are not part of the document. */
+  aside, .no-print { display: none !important; }
+
+  /* Shell's h-screen/overflow-hidden, its scrolling <main>, and each table's own horizontal
+     scroller. Released by class because that is where they are set. Only div, so LevelBanner's
+     <header> keeps clipping the decorative wheel that hangs off its corner. */
+  .h-screen { height: auto !important; }
+  div.overflow-hidden, .overflow-y-auto, .overflow-x-auto { overflow: visible !important; }
+
+  /* The banner is white text on a gradient the printer drops, which on paper is a blank strip
+     where the report's title should be. Ink on white instead, decoration dropped. */
+  header { background: #fff !important; box-shadow: none !important; }
+  header, header * { color: var(--ink) !important; }
+  header > svg { display: none !important; }
+
+  /* Tables set a min-width for the on-screen scroller; on paper the page is the limit. */
+  table { min-width: 0 !important; width: 100% !important; }
+
+  tr { break-inside: avoid; }
+}

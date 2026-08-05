@@ -1,38 +1,45 @@
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { Download, FileSpreadsheet } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
-import { DISHA_DISTRICTS, districtsIn, GOALS_YEAR } from '@/data/disha'
-import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
-import { targetValue } from '@/data/dishaTargets'
+import { DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
+import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
+import { targetValue, subscribe, getTargets } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Card, DataNote } from '@/components/Bits'
 
-const ZONE6 = districtsIn(2)
 const byNumber = (n) => DISHA_DISTRICTS.find((d) => d.number === String(n)) ?? null
-const ROLES = ['RRFC', 'ARRFC', 'ARC', 'RMGA', 'EMGA', 'RPIC']
 
-const MONTHS = [
-  'July 2025', 'August 2025', 'September 2025', 'October 2025', 'November 2025',
-  'December 2025', 'January 2026', 'February 2026', 'March 2026',
+// The RRFC sits on ZONE.rrfc, not in ZONE.coordinators, so looking the selected name up in the
+// coordinators alone never found him.
+//
+// His coverage comes from the DISHA data, not from zone6.js's hand-written DISTRICTS list: that
+// list has nine entries and omits 3291, which the portal carries as a real Zone 6 district with
+// its own governor. The RRFC leads the whole zone, so he gets all ten — the same number the RI
+// Director's screens show. 3291 having no ARRFC beneath him is a separate, surfaced fact.
+const TEAM = [
+  { ...ZONE.rrfc, supports: DISHA_DISTRICTS.filter((d) => d.zoneId === 2).map((d) => d.number) },
+  ...ZONE.coordinators,
 ]
+const ROLES = ['RRFC', 'ARRFC', 'ARC', 'RMGA', 'EMGA', 'RPIC']
 
 const input = 'w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#003DA5]/25 focus:border-[#003DA5]'
 
 /**
- * The Zone 6 monthly coordinator report. Sections 2 to 6 are filled from the same figures the
- * rest of the app reads, so the form arrives complete and the coordinator reviews rather than
- * retypes. Sections 1 and 7 to 9 are theirs to write.
+ * The Zone 6 monthly coordinator report. The category sections are filled from the same figures
+ * the rest of the app reads, so the coordinator reviews rather than retypes. Rows the portal has
+ * no column for are marked, not guessed, and the closing sections are theirs to write.
  */
 export default function MonthlyReport() {
   const [coordinator, setCoordinator] = useState(ZONE.rrfc.name)
   const [role, setRole] = useState('RRFC')
-  const [month, setMonth] = useState('March 2026')
   const [free, setFree] = useState({ challenges: '', support: '', plan: '' })
   const [toast, setToast] = useState(null)
+  // Targets are entered on another screen. Subscribing to the snapshot object, not to a count:
+  // its identity changes on every write, so overwriting an existing target redraws here too.
+  useSyncExternalStore(subscribe, getTargets, getTargets)
 
-  const selected = ZONE.coordinators.find((c) => c.name === coordinator)
-  const districts = (selected ? selected.supports : ZONE6.map((d) => d.number))
-    .map(byNumber).filter(Boolean)
+  const selected = TEAM.find((c) => c.name === coordinator) ?? ZONE.rrfc
+  const districts = selected.supports.map(byNumber).filter(Boolean)
 
   const say = (m) => { setToast(m); setTimeout(() => setToast(null), 3000) }
 
@@ -52,6 +59,9 @@ export default function MonthlyReport() {
     }
     return s
   }
+  // Whether THIS report has a target to show — the store's global count also counts club and
+  // zone-metric targets, which would hide the note below while every column here stayed blank.
+  const anyTarget = REPORT_FIELDS.some((f) => targetOver(f) != null)
 
   return (
     <>
@@ -60,7 +70,7 @@ export default function MonthlyReport() {
         title="Monthly Coordinator Progress Report"
         sub={`${ZONE.name} · due by the 5th of each month · one form per coordinator`}
         right={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 no-print">
             <Btn onClick={() => window.print()}><Download size={13} /> Export PDF</Btn>
             <Btn onClick={() => say('Excel export would carry the district columns and field codes.')}>
               <FileSpreadsheet size={13} /> Export Excel
@@ -71,8 +81,11 @@ export default function MonthlyReport() {
 
       <div className="mb-4">
         <DataNote>
-          Sections 2 to 6 arrive filled from the reported figures. The coordinator reviews the numbers
-          and writes sections 7 to 9 — the typing job is gone.
+          The portal carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} rows on this form, and those
+          arrive filled from the reported figures. The other {REPORT_FIELDS.length - SOURCED_FIELDS},
+          including all of Public Image, are not collected in the portal and stay blank. The figures are
+          each district's reported position for {PREVIOUS_YEAR}, the baseline the {GOALS_YEAR} targets are
+          set against. The coordinator reviews the numbers and writes the closing sections.
         </DataNote>
       </div>
 
@@ -95,22 +108,26 @@ export default function MonthlyReport() {
                 {districts.map((d) => d.number).join(' · ')}
               </div>
             </Field>
-            <Field label="Reporting month">
-              <select value={month} onChange={(e) => setMonth(e.target.value)} className={input}>
-                {MONTHS.map((m) => <option key={m}>{m}</option>)}
-              </select>
+            {/* This was a month picker. The portal carries one figure per district per year, so
+                changing the month changed nothing on the page while implying a monthly series
+                that does not exist. The period the figures actually cover is stated instead. */}
+            <Field label="Figures cover" auto>
+              <div className={`${input} bg-blue-50/70 border-blue-200 text-[12px]`}>
+                As reported for {PREVIOUS_YEAR}
+              </div>
             </Field>
           </div>
-          {selected && (
-            <p className="text-[11px] text-slate-400 mt-3">
-              {ARRFC_ROLE_LONG} · home district {selected.homeDistrict}
-            </p>
-          )}
+          {/* The RRFC carries his own roleLong; the ARRFCs share one, held once in zone6.js. */}
+          <p className="text-[11px] text-slate-400 mt-3">
+            {selected.roleLong ?? ARRFC_ROLE_LONG} · home district {selected.homeDistrict}
+          </p>
         </Section>
 
         {/* One section per category, districts across */}
         {REPORT_CATEGORIES.map((cat, i) => (
-          <Section key={cat.id} n={i + 2} title={cat.label} auto>
+          // Public Image has no source at all, so it carries no "filled in" badge to belie it.
+          <Section key={cat.id} n={i + 2} title={cat.label}
+                   auto={fieldsInCategory(cat.id).some((f) => f.src)}>
             <div className="overflow-x-auto">
               <table className="w-full text-[13px] min-w-[560px]">
                 <thead>
@@ -125,7 +142,10 @@ export default function MonthlyReport() {
                 <tbody className="divide-y divide-slate-100">
                   {fieldsInCategory(cat.id).map((f) => (
                     <tr key={f.id} className="hover:bg-slate-50/70">
-                      <td className="py-2 text-slate-700">{f.label}</td>
+                      <td className="py-2 text-slate-700">
+                        {f.label}
+                        {!f.src && <NotCollected />}
+                      </td>
                       {districts.map((d) => (
                         <td key={d.id} className="py-2 px-3 text-right font-data tabular-nums text-slate-700">
                           {dishaNumber(achievedFor(f, d), f.unit) ?? <span className="text-slate-300">—</span>}
@@ -142,28 +162,47 @@ export default function MonthlyReport() {
           </Section>
         ))}
 
-        <Section n={REPORT_CATEGORIES.length + 2} title="Goal Progress vs. Zone Target" auto>
+        {/* Not "vs. Zone Target": both columns sum the districts this coordinator covers, which
+            for ARRFC Konwar is one district. It is only the zone total when the RRFC is selected. */}
+        <Section n={REPORT_CATEGORIES.length + 2} title="Goal Progress vs. Target" auto>
+          {!anyTarget && (
+            <p className="text-[11px] text-slate-400 mb-3">
+              District Governors set their targets at the goal-setting event and none are set yet for the
+              districts covered here, so the target, percentage and judgement columns stay blank. The{' '}
+              {PREVIOUS_YEAR} figures are filled in either way.
+            </p>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-[13px] min-w-[640px]">
               <thead>
                 <tr className="eyebrow text-slate-400 border-b border-slate-200">
                   <th className="text-left font-medium pb-2">Goal area</th>
-                  <th className="text-right font-medium pb-2 px-3">Zone target</th>
-                  <th className="text-right font-medium pb-2 px-3">Actual to date</th>
-                  <th className="text-right font-medium pb-2 px-3">% achieved</th>
-                  <th className="text-center font-medium pb-2 px-3">On track</th>
+                  <th className="text-right font-medium pb-2 px-3">
+                    Target {GOALS_YEAR}
+                    <span className="block tracking-normal text-slate-300">districts covered</span>
+                  </th>
+                  <th className="text-right font-medium pb-2 px-3">Achieved {PREVIOUS_YEAR}</th>
+                  {/* Not "% achieved" and not "on track": both read as progress made inside the
+                      target year, when this is last year's figure measured against next year's
+                      target — how far the target reaches beyond where the zone already stands. */}
+                  <th className="text-right font-medium pb-2 px-3">% of target</th>
+                  <th className="text-center font-medium pb-2 px-3">Near target</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {REPORT_FIELDS.map((f) => {
                   const a = sumOver(f)
                   const t = targetOver(f)
-                  if (a == null && t == null) return null
                   const pct = a != null && t ? (a / t) * 100 : null
                   const ok = pct == null ? null : f.lowerIsBetter ? pct <= 100 : pct >= 90
+                  // Every goal area on the form keeps its row, blank or not — dropping the empty
+                  // ones would leave this section a different length from the ones above it.
                   return (
-                    <tr key={f.id} className="bg-blue-50/30">
-                      <td className="py-2 text-slate-700 font-medium">{f.label}</td>
+                    <tr key={f.id} className={f.src ? 'bg-blue-50/30' : ''}>
+                      <td className="py-2 text-slate-700 font-medium">
+                        {f.label}
+                        {!f.src && <NotCollected />}
+                      </td>
                       <td className="py-2 px-3 text-right font-data tabular-nums text-slate-500">
                         {dishaNumber(t, f.unit) ?? '—'}
                       </td>
@@ -208,8 +247,8 @@ export default function MonthlyReport() {
             <div className={`${input} text-slate-700 max-w-sm`}>{coordinator}</div>
           </Field>
           <p className="text-[11px] text-slate-400 mt-3">
-            Rotary Year {GOALS_YEAR} · {districts.length} district
-            {districts.length > 1 ? 's' : ''} covered.
+            Goals for Rotary Year {GOALS_YEAR} · figures as reported for {PREVIOUS_YEAR} ·{' '}
+            {districts.length} district{districts.length > 1 ? 's' : ''} covered.
           </p>
         </Card>
       </div>
@@ -231,6 +270,11 @@ function Btn({ onClick, children }) {
       {children}
     </button>
   )
+}
+
+/** A row the portal has no column for. Says so, so the dashes do not read as a fault. */
+function NotCollected() {
+  return <span className="ml-2 text-[10px] text-slate-400 whitespace-nowrap">not collected</span>
 }
 
 function Section({ n, title, auto, children }) {

@@ -96,46 +96,5 @@ export const clubMetric = (id) => CLUB_METRICS.find((m) => m.id === id) ?? null
 export const foundationMetric = (id) => FOUNDATION.find((m) => m.id === id) ?? null
 export const anyMetric = (id) => foundationMetric(id) ?? clubMetric(id)
 
-// ── Seeded targets ────────────────────────────────────────────────────────────
-// Demo values, not client-supplied. Every one is editable; the point of the prototype is
-// that these move. Chosen as round numbers just above the March 2026 actual so the
-// pace-based status spread (On Track / At Risk / Behind) is visible on screen.
-export const SEED_ZONE_TARGETS = {
-  // Foundation — from the workbook
-  annualFund: 700000,
-  phf: 800,
-  majorDonors: 40,
-  phsmPaulHarrisSocietyMember: 35,
-  endowment: 12,
-  annualFundPerCapitaContribution25: 200,
-  csrProjectWithRfi: 10,
-  directedGift: 6,
-  epf: 8,
-  bequestSociety: 3,
-  archKlumpSociety: 2,
-  // Foundation, club-reported
-  clubTrfUSD: 1000000,
-  trfAnnualUSD: 75000,
-  trfPolioUSD: 15000,
-  trfPerCapita: 400,
-  trfDonors: 800,
-  // Membership
-  members: 3600,
-  netChange: 400,
-  newMembers: 30,
-  female: 900,
-  myRotaryPct: 70,
-  attendance: 75,
-  // Public Image
-  piInitiatives: 40,
-  piNewsletters: 12,
-  piOcv: 800,
-  // Projects
-  projects: 2600,
-  volunteers: 30000,
-  rotaract: 25,
-  interact: 60,
-}
-
-/** Districts that carry more of the zone get proportionally bigger asks, not an equal split. */
-export const SEED_DISTRICT_TARGET_FACTOR = 1.15
+// This file defines metrics, not targets. There are deliberately no target values here: the
+// source carries none, and District Governors set them live at the goal-setting event.
