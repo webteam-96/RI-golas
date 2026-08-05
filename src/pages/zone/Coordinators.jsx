@@ -73,7 +73,7 @@ export default function ZoneCoordinators() {
           const v = sumOver(f)
           return (
             <Kpi key={cat.id} label={cat.label}
-                 sub={v == null ? `${f?.label} · not collected` : f?.label}
+                 sub={f?.label}
                  value={dishaNumber(v, f?.unit) ?? '—'}
                  tone={cat.id === 'foundation' ? 'gold' : cat.id === 'membership' ? 'blue'
                        : cat.id === 'publicimage' ? 'purple' : cat.id === 'projects' ? 'green' : 'royal'} />
@@ -120,7 +120,7 @@ export default function ZoneCoordinators() {
 
       <GoalMatrix
         categories={REPORT_CATEGORIES.map((cat) => ({ id: cat.id, label: cat.label }))}
-        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f, muted: f.src ? null : 'not collected' }))}
+        fields={(catId) => fieldsInCategory(catId).map((f) => ({ ...f }))}
         entities={districts.map((d) => ({ id: d.id, label: d.number, to: `/district/${d.number}/overview` }))}
         achieved={(f, e) => achievedFor(f, DISHA_DISTRICTS.find((d) => d.id === e.id))}
         target={(f, e) => targetValue(e.id, f.id)}

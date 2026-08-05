@@ -146,7 +146,6 @@ export default function MonthlyReport() {
                     <tr key={f.id} className="hover:bg-slate-50/70">
                       <td className="py-2 text-slate-700">
                         {f.label}
-                        {!f.src && <NotCollected />}
                       </td>
                       {districts.map((d) => (
                         <td key={d.id} className="py-2 px-3 text-right font-data tabular-nums text-slate-700">
@@ -198,7 +197,6 @@ export default function MonthlyReport() {
                     <tr key={f.id} className={f.src ? 'bg-blue-50/30' : ''}>
                       <td className="py-2 text-slate-700 font-medium">
                         {f.label}
-                        {!f.src && <NotCollected />}
                       </td>
                       <td className="py-2 px-3 text-right font-data tabular-nums text-slate-500">
                         {dishaNumber(t, f.unit) ?? '—'}
@@ -267,11 +265,6 @@ function Btn({ onClick, children }) {
       {children}
     </button>
   )
-}
-
-/** A row the portal has no column for. Says so, so the dashes do not read as a fault. */
-function NotCollected() {
-  return <span className="ml-2 text-[10px] text-slate-400 whitespace-nowrap">not collected</span>
 }
 
 function Section({ n, title, auto, children }) {

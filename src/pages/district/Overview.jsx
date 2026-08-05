@@ -52,7 +52,7 @@ export default function DistrictOverview() {
           // tiles are a dash on every district. The sub line says why, otherwise a bare em-dash
           // reads as something that failed to load.
           return (
-            <Kpi key={c.id} label={c.label} sub={f && (f.src ? f.label : `${f.label} · not collected`)}
+            <Kpi key={c.id} label={c.label} sub={f?.label}
                  value={dishaNumber(achievedFor(f, d), f?.unit) ?? '—'}
                  tone={c.id === 'foundation' ? 'gold' : c.id === 'membership' ? 'blue'
                        : c.id === 'publicimage' ? 'purple' : c.id === 'projects' ? 'green' : 'royal'} />

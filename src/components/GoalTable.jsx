@@ -196,7 +196,7 @@ export default function GoalTable({ scope, scopeId, metrics, editable = true }) 
                             {g.actual} of {g.total}
                           </span>
                         ) : (
-                          <span className="text-slate-300" title="not collected">—</span>
+                          <span className="text-slate-300">—</span>
                         )
                       ) : editable ? (
                         <input

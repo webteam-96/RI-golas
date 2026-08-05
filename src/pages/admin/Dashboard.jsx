@@ -160,9 +160,9 @@ export default function AdminDashboard() {
                 </div>
                 {s && <Bar value={s.pct} max={100} color={AREA_COLOR[c.id]} height="h-2" />}
                 {/* Public Image and Projects are the two areas the portal carries no column for.
-                    With nothing reported there is no target either, so they stay dashed. */}
+                    The dash above carries that on its own; the page note says why once. */}
                 <p className="text-[10px] text-slate-400 mt-1.5">
-                  {s ? `${s.scored} scored` : 'not collected in the portal'}
+                  {s ? `${s.scored} scored` : ' '}
                 </p>
               </div>
             ))}

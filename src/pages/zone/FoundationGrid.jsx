@@ -68,7 +68,7 @@ export default function FoundationGrid() {
                           {m.unit === 'yesno'
                             ? <YesNoPill value={v} />
                             : v == null
-                              ? <span className="text-slate-300" title="not collected">—</span>
+                              ? <span className="text-slate-300">—</span>
                               : <span className={v === 0 ? 'text-slate-300' : 'text-slate-700'}>{fmt(v, m.unit)}</span>}
                         </td>
                       )
@@ -78,7 +78,7 @@ export default function FoundationGrid() {
                           gets the same dash as a blank cell rather than "0 of 9". */}
                       {m.unit !== 'yesno' ? fmt(zoneVal.value, m.unit)
                         : zoneVal.reporting ? `${zoneVal.value} of ${zoneVal.total}`
-                        : <span className="text-slate-300 font-normal" title="not collected">—</span>}
+                        : <span className="text-slate-300 font-normal">—</span>}
                     </td>
                   </tr>
                 )

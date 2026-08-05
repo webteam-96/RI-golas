@@ -87,7 +87,7 @@ export default function CoordinatorDetail() {
           const f = leadField(cat.id)
           return (
             <Kpi key={cat.id} label={cat.label}
-                 sub={f?.src ? f.label : 'not collected in the portal'}
+                 sub={f?.label}
                  value={dishaNumber(sumOver(f), f?.unit) ?? '—'}
                  tone={cat.id === 'foundation' ? 'gold' : cat.id === 'membership' ? 'blue'
                        : cat.id === 'publicimage' ? 'purple' : cat.id === 'projects' ? 'green' : 'royal'} />
