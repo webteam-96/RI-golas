@@ -2,7 +2,7 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { DISHA_DISTRICTS, districtsIn, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
-import { targetValue, useTargetCount } from '@/data/dishaTargets'
+import { targetValue, enteredCountIn, useTargetCount } from '@/data/dishaTargets'
 import { clubsIn } from '@/lib/rollup'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Kpi, DataNote, EmptyState, Card } from '@/components/Bits'
@@ -26,10 +26,10 @@ export default function DistrictOverview() {
   const zoneDistricts = districtsIn(d.zoneId)
   const clubs = clubsIn(d.number)
 
-  // The tiles are this district's and the matrix is its zone, so both are covered by counting
-  // over the districts on screen.
-  const withTarget = zoneDistricts.reduce(
-    (n, x) => n + REPORT_FIELDS.filter((f) => targetValue(x.id, f.id)).length, 0)
+  // Counted with enteredCountIn, not targetValue: almost every populated cell now carries a
+  // provisional target, so counting those would report a hundred-odd "set" when a governor has
+  // typed none. Only what somebody actually entered is worth stating.
+  const entered = zoneDistricts.reduce((n, x) => n + enteredCountIn('district', x.id), 0)
 
   return (
     <>
@@ -104,14 +104,15 @@ export default function DistrictOverview() {
 
       <div className="mt-5">
         <DataNote>
-          Every figure here is what was achieved in {PREVIOUS_YEAR}; targets are set by District
-          Governors for {GOALS_YEAR} at the goal-setting event.{' '}
-          {withTarget
-            ? `${withTarget} ${withTarget === 1 ? 'is' : 'are'} set across these ${zoneDistricts.length} districts — a field with one is scored against it, the rest are shown on their own.`
-            : 'None are set for these districts yet, so nothing here is scored against one.'}{' '}
-          The portal carries {SOURCED_FIELDS} of
-          the {REPORT_FIELDS.length} fields on the monthly report; the rest, Public Image included,
-          are not collected in it at all and read as a dash.
+          Every achieved figure here is what the district reported in {PREVIOUS_YEAR}. The{' '}
+          <strong>targets are provisional</strong>: each is worked out from that district&apos;s own{' '}
+          {PREVIOUS_YEAR} figure, not supplied by the client and not held in the portal, which seeds
+          none because District Governors set their {GOALS_YEAR} targets at the goal-setting event.
+          A target typed on a Goals screen is the real one and replaces the provisional figure for
+          that field{entered ? ` — ${entered} entered so far across these ${zoneDistricts.length} districts` : ''}.{' '}
+          The portal carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on the monthly
+          report; the rest, Public Image included, are not collected in it at all, so they read as a
+          dash and carry no target either.
         </DataNote>
       </div>
     </>

@@ -1,15 +1,28 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PREVIOUS_YEAR, GOALS_YEAR } from '@/data/disha'
+import { TARGETS_ARE_PROVISIONAL } from '@/data/dishaTargets'
 import { Card } from './Bits'
 
-const OK = '#009739', WARN = '#B85400', BAD = '#C8102E', NONE = '#94A3B8'
+const OK = '#009739', WARN = '#B85400', BAD = '#C8102E', PLAIN = '#1E293B', NONE = '#94A3B8'
 
-/** Colour the achieved figure by where it stands, inverted for fields where less is better. */
+/**
+ * Colour the achieved figure by where it stands, inverted for fields where less is better.
+ *
+ * The bands are deliberately not the ones you would use for progress inside a running year.
+ * Achieved is last year's baseline and the target is a stretch for a year that has not started,
+ * so sitting below the target is the ordinary, expected state — it is what a target IS. The
+ * previous bands treated everything under 100% as a warning, which against a 7-25% uplift meant
+ * 287 of 314 cells rendered amber and not one rendered green: the colour was the uplift constant,
+ * drawn on screen, and it read as a zone failing across the board.
+ *
+ * Now a figure only takes colour when the colour means something — already at or past the target,
+ * or so far short that the target is out of reach. Everything in between is plain ink.
+ */
 export const pctTone = (pct, lowerIsBetter) => {
   if (pct == null) return NONE
-  if (lowerIsBetter) return pct <= 100 ? OK : pct <= 133 ? WARN : BAD
-  return pct >= 100 ? OK : pct >= 75 ? WARN : BAD
+  if (lowerIsBetter) return pct <= 100 ? OK : pct <= 150 ? PLAIN : WARN
+  return pct >= 100 ? OK : pct >= 60 ? PLAIN : WARN
 }
 
 /**
@@ -74,11 +87,17 @@ export default function GoalMatrix({
       </div>
 
       <Card title={title ?? category.label} sub={sub} right={right}>
-        {/* Every cell reads the same way, so the years are stated once for the table rather than
-            on all 27 rows. Without this the achieved figure — which is last year's reported
-            position — is read as progress made against the year the targets are for. */}
+        {/* Every cell reads the same way, so the years — and the provenance of the second figure —
+            are stated once for the table rather than on all 27 rows. Without the first sentence the
+            achieved figure, which is last year's reported position, is read as progress against the
+            year the targets are for. Without the second, a figure this app worked out is read as a
+            target the client supplied, which is the one mistake this screen must not make. */}
         <p className="text-[11px] text-slate-400 mb-3">
-          {achievedLabel}, over the target being set for {GOALS_YEAR}.
+          {achievedLabel}, over the target for {GOALS_YEAR}.{' '}
+          {TARGETS_ARE_PROVISIONAL &&
+            `Targets are provisional — worked out from each column's own reported figure, not from the
+             portal, which seeds none because governors set them at the goal-setting event. A target
+             entered on a Goals screen replaces the provisional one.`}
         </p>
         <div className="overflow-x-auto -mx-5">
           <table className="w-full text-[13px] border-separate border-spacing-0">

@@ -1,15 +1,13 @@
-/* Rotary's brand pairing is Sentinel (slab) + Open Sans. Sentinel is licensed, so Zilla Slab
-   stands in for the display role; Open Sans is the real brand face. IBM Plex Mono carries the
-   data — tabular figures and the small engraved labels. */
-@import '@fontsource/zilla-slab/500.css';
-@import '@fontsource/zilla-slab/600.css';
-@import '@fontsource/zilla-slab/700.css';
-@import '@fontsource/open-sans/400.css';
-@import '@fontsource/open-sans/600.css';
-@import '@fontsource/open-sans/700.css';
-@import '@fontsource/ibm-plex-mono/400.css';
-@import '@fontsource/ibm-plex-mono/500.css';
-@import '@fontsource/ibm-plex-mono/600.css';
+/* Inter carries headings and body alike, JetBrains Mono every figure. One voice rather than a
+   slab headline over a humanist body, and both faces were drawn for screens at small sizes —
+   which is most of this app. Bundled, not fetched: no CDN call on a conference wifi. */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
 
 @tailwind base;
 @tailwind components;
@@ -63,21 +61,26 @@
   body {
     background-color: var(--ledger);
     color: hsl(var(--foreground));
-    font-family: 'Open Sans', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     font-feature-settings: 'cv05' 1;
     -webkit-font-smoothing: antialiased;
   }
 
-  /* Display face: institutional, ceremonial, set tight. */
+  /* Display is the same face as body, separated by weight and tracking rather than by a second family. */
   h1, h2, .font-display {
-    font-family: 'Zilla Slab', Georgia, serif;
-    letter-spacing: -0.015em;
+    font-family: 'Inter', system-ui, sans-serif;
+    /* Loosened from -0.015em, which was tuned to Zilla Slab's wider slab serifs and reads tight
+       on Inter at display sizes. */
+    letter-spacing: -0.01em;
   }
 
   /* Every figure on screen is compared to another figure, so all of them are tabular. */
   .tabular-nums, table, input[type='number'] {
     font-variant-numeric: tabular-nums;
-    font-feature-settings: 'tnum' 1;
+    /* cv05 is repeated, not inherited: font-feature-settings replaces the whole list rather than
+       merging with body's, so naming tnum alone switched Inter's single-storey l off inside every
+       table and left table text subtly different from the prose around it. */
+    font-feature-settings: 'cv05' 1, 'tnum' 1;
   }
 
   :focus-visible {
@@ -89,14 +92,17 @@
 @layer utilities {
   /* Small engraved labels — the instrument-panel voice. */
   .eyebrow {
-    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-weight: 500;
     font-size: 0.625rem;
-    letter-spacing: 0.16em;
+    /* Tightened from 0.16em: JetBrains Mono has a larger x-height than IBM Plex Mono, so the
+       eyebrows read heavier at the same tracking, and the five category labels on the
+       coordinator cards were close to wrapping. */
+    letter-spacing: 0.14em;
     text-transform: uppercase;
   }
   .font-data {
-    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
   }
   .rule-gold {

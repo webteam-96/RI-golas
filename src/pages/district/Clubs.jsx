@@ -2,7 +2,7 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { DISHA_DISTRICTS, GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES } from '@/data/reportFields'
 import { CLUB_FIELDS, clubFieldsIn, clubCategories, clubAchieved, clubTarget } from '@/data/clubFigures'
-import { useTargetCount } from '@/data/dishaTargets'
+import { enteredCountIn, useTargetCount } from '@/data/dishaTargets'
 import { clubsIn } from '@/lib/rollup'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Card, EmptyState, DataNote } from '@/components/Bits'
@@ -18,8 +18,9 @@ export default function DistrictClubs() {
 
   const clubs = clubsIn(d.number)
   const cats = clubCategories(REPORT_CATEGORIES)
-  const withTarget = clubs.reduce(
-    (n, c) => n + CLUB_FIELDS.filter((f) => clubTarget(c.id, f.id)).length, 0)
+  // Entered targets only. clubTarget also returns a provisional figure for every reported field,
+  // so counting through it would claim hundreds are set when no president has typed one.
+  const entered = clubs.reduce((n, c) => n + enteredCountIn('club', c.id), 0)
 
   if (!clubs.length) {
     return (
@@ -56,18 +57,20 @@ export default function DistrictClubs() {
         sub={`${clubs.length} across · figures from the AG-module club dataset`}
         // Not the district's default. These figures come from src/data/clubs.js, not the DISHA
         // portal, and that file states no reporting period anywhere — claiming them for
-        // PREVIOUS_YEAR would invent a period the data does not carry. The target half of the
-        // caption stands: club targets are entered on each club's own goals screen, for GOALS_YEAR.
+        // PREVIOUS_YEAR would invent a period the data does not carry. Targets are provisional,
+        // grown from each club's own figure, until a president enters one on the club's goals screen.
         achievedLabel="Achieved as each club last reported it (the club dataset states no period)"
       />
 
       <div className="mt-5">
         <DataNote tone="slate">
           Clubs answer {CLUB_FIELDS.length} of the report&apos;s fields — the rest are district-level and
-          are left off this page.{' '}
-          {withTarget
-            ? `${withTarget} target${withTarget === 1 ? ' is' : 's are'} set across these clubs — a figure with one is scored against it, the rest are shown on their own.`
-            : 'No targets are set for these clubs yet, so each figure is shown on its own.'}
+          are left off this page. The <strong>targets are provisional</strong>: each is worked out
+          from that club&apos;s own reported figure, not supplied by the client and not held in the
+          portal, which seeds none. A target entered on a club&apos;s Goals screen is the real one and
+          replaces the provisional figure for that field
+          {entered ? `, and ${entered} ${entered === 1 ? 'has' : 'have'} been entered across these clubs` : ''}.
+          A field the club has not reported carries no target either and stays blank on both sides.
         </DataNote>
       </div>
     </>

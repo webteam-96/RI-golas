@@ -2,7 +2,7 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR, districtsIn } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
-import { targetValue, useTargetCount } from '@/data/dishaTargets'
+import { targetValue, useTargetCount, enteredCountIn } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
 import { pctTone } from '@/components/GoalMatrix'
 import { LevelBanner, Kpi, Card, Bar, DataNote, Coverage } from '@/components/Bits'
@@ -23,6 +23,12 @@ export default function DistrictDetail() {
     t: targetValue(d.id, f.id),
   }))
   const withTarget = rows.filter((r) => r.t).length
+  const reported = rows.filter((r) => r.a != null).length
+  // Neither figure: the portal carries no column for the field, so there is nothing to report
+  // and nothing to work a target from. Counted rather than inferred as 27 − reported, because a
+  // money field reported as zero has an achieved figure and still no target worth inventing.
+  const blankBoth = rows.filter((r) => r.a == null && !r.t).length
+  const entered = enteredCountIn('district', d.id)
   const scored = rows.filter((r) => r.a != null && r.t)
   // Floored as well as capped: a figure below zero — net change, say — is 0% attained, not a
   // negative attainment dragging the mean under.
@@ -47,12 +53,14 @@ export default function DistrictDetail() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
         <Kpi label="Zone" value={zone?.name ?? '—'} tone="royal" sub={`${peers.length} districts`} />
         <Kpi label="Governor" value={(d.governor ?? '—').replace(/^Rtn\.?\s*/i, '')} tone="gold" />
-        <Kpi label="Fields reported" value={`${rows.filter((r) => r.a != null).length} / ${REPORT_FIELDS.length}`}
+        <Kpi label="Fields reported" value={`${reported} / ${REPORT_FIELDS.length}`}
              tone="purple" sub="with data on file" />
+        {/* 'targets provisional' rides on the tile itself: the percentage is what gets quoted,
+            and it should not travel without what it was measured against. */}
         <Kpi label="Attainment" value={attainment == null ? '—' : `${attainment.toFixed(0)}%`}
              tone={attainment == null ? 'slate' : attainment >= 90 ? 'green' : attainment >= 70 ? 'gold' : 'rose'}
-             sub={attainment != null ? `${scored.length} goal${scored.length === 1 ? '' : 's'} scored`
-                  : withTarget ? 'nothing reported against those targets' : 'no targets set yet'} />
+             sub={attainment != null ? `${scored.length} of ${REPORT_FIELDS.length} fields · targets provisional`
+                  : 'nothing reported for this district'} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -142,16 +150,22 @@ export default function DistrictDetail() {
 
       <div className="mt-5 space-y-2">
         <DataNote>
-          The Achieved column is what this district reported for {PREVIOUS_YEAR}; targets are set by
-          District Governors for {GOALS_YEAR} at the goal-setting event.{' '}
-          {withTarget
-            ? `${withTarget} of the ${REPORT_FIELDS.length} fields ${withTarget === 1 ? 'carries' : 'carry'} one here; the rest leave the target and progress columns empty.`
-            : 'None are set for this district yet, so the target and progress columns are empty.'}
+          The Achieved column is what this district reported for {PREVIOUS_YEAR}.{' '}
+          <strong>The {GOALS_YEAR} targets beside it are provisional</strong> — this district's own
+          reported figure with a growth uplift, worked out for the demonstration rather than
+          supplied by the client. The portal seeds none, because District Governors set theirs at
+          the goal-setting event; a target typed on the Goals screen is the real one and replaces
+          the provisional figure for that field.{' '}
+          {entered
+            ? `${entered} ${entered === 1 ? 'has' : 'have'} been entered for this district so far.`
+            : 'None have been entered for this district yet.'}
         </DataNote>
         <DataNote tone="slate">
-          The portal carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on the monthly
-          report. The other {REPORT_FIELDS.length - SOURCED_FIELDS}, Public Image among them, are
-          not collected there and show a dash rather than a figure.
+          {reported} of the {REPORT_FIELDS.length} fields on the monthly report carry a portal
+          figure for District {d.number} and {withTarget} carry a target; the {blankBoth} with
+          neither are blank on both sides, and are left out of the attainment above rather than
+          counted as missed. Only {SOURCED_FIELDS} fields are collected in the portal at all —
+          Public Image is not among them.
         </DataNote>
       </div>
     </>

@@ -1,5 +1,6 @@
+import { CLUBS } from './clubs.js'
 import { REPORT_FIELDS } from './reportFields.js'
-import { targetIn } from './dishaTargets.js'
+import { enteredTarget, provisionalFrom } from './dishaTargets.js'
 
 /**
  * The monthly report's fields read against a single club.
@@ -44,11 +45,19 @@ export function clubAchieved(field, club) {
 }
 
 /**
- * Target for a club field. Same store as the districts', same rule: null until a president
- * sets it. Club targets used to be the club's own figure times an uplift, which measured
- * nothing except the uplift.
+ * Target for a club field: what the president entered, or a provisional figure grown from the
+ * club's own reported number until they do. Same two-source rule as the districts', so a club
+ * cell reads the same way as every other cell in the app.
  */
-export const clubTarget = (clubId, fieldId) => targetIn('club', clubId, fieldId)
+export function clubTarget(clubId, fieldId) {
+  const entered = enteredTarget('club', clubId, fieldId)
+  if (entered != null) return entered
+
+  const club = CLUBS.find((c) => c.id === clubId)
+  const field = CLUB_FIELDS.find((f) => f.id === fieldId)
+  if (!club || !field) return null
+  return provisionalFrom(clubAchieved(field, club), field)
+}
 
 /** Roll a club field up to a district — the sum across its clubs, blanks left out. */
 export function districtFromClubs(field, clubs) {

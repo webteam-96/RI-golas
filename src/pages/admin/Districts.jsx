@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { DISHA_ZONES, DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
 import { REPORT_FIELDS, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
-import { targetValue, useTargetCount } from '@/data/dishaTargets'
+import { targetValue, useTargetCount, enteredCountIn } from '@/data/dishaTargets'
 import { LevelBanner, Card, Bar, DataNote } from '@/components/Bits'
 
 const zoneName = (id) => DISHA_ZONES.find((z) => z.id === id)?.name ?? '—'
@@ -15,7 +15,8 @@ const zoneName = (id) => DISHA_ZONES.find((z) => z.id === id)?.name ?? '—'
  */
 const coverageOf = (d) => REPORT_FIELDS.filter((f) => achievedFor(f, d) != null).length
 
-/** Null for a district until targets are entered against it, which is the starting state. */
+/** Null only where a district reports nothing at all: every reported figure carries a target,
+ *  entered if a governor typed one and provisional otherwise. */
 const attainmentOf = (d) => {
   const scored = REPORT_FIELDS
     .map((f) => ({ a: achievedFor(f, d), t: targetValue(d.id, f.id) }))
@@ -28,17 +29,18 @@ const attainmentOf = (d) => {
 
 export default function AdminDistricts() {
   const [q, setQ] = useState('')
-  useTargetCount() // targets are entered elsewhere; re-render when they are. The count it returns
-                   // spans every scope — club and zone-metric targets included — so the note below
-                   // counts the districts this table actually scores instead.
+  useTargetCount() // targets are entered elsewhere; re-render when they are. Its own count spans
+                   // every scope — club and zone-metric targets included — so the note below sums
+                   // enteredCountIn per district to count only what a governor typed here.
 
   // Kept in the portal's own order — zone, then district number. Nothing here sorts on
-  // attainment: that column is null wherever no target has been set, which is most of it.
+  // attainment: the order is the one the portal and the governors themselves read it in.
   const rows = DISHA_DISTRICTS
     .map((d) => ({ ...d, cov: coverageOf(d), att: attainmentOf(d) }))
     .filter((d) => d.number.includes(q.trim()) || (d.governor ?? '').toLowerCase().includes(q.trim().toLowerCase()))
 
   const scored = rows.filter((d) => d.att != null).length
+  const entered = rows.reduce((n, d) => n + enteredCountIn('district', d.id), 0)
 
   return (
     <>
@@ -67,7 +69,13 @@ export default function AdminDistricts() {
                 <th className="text-left font-medium py-3 px-3">District Governor</th>
                 <th className="text-right font-medium py-3 px-3">Fields reported</th>
                 <th className="text-left font-medium py-3 px-3 w-44">Coverage</th>
-                <th className="text-right font-medium py-3 px-3">Attainment</th>
+                {/* The caveat lives in a DataNote below a 23-row table, which on a 1080p screen
+                    is well past the fold. A percentage on screen with its qualifier out of sight
+                    is the one thing this table must not do. */}
+                <th className="text-right font-medium py-3 px-3">
+                  Attainment
+                  <span className="block tracking-normal text-slate-300 normal-case">vs provisional target</span>
+                </th>
                 <th className="w-10" />
               </tr>
             </thead>
@@ -110,16 +118,22 @@ export default function AdminDistricts() {
 
       <div className="mt-5 space-y-2">
         <DataNote>
-          Fields reported and Attainment stand on what each district achieved in {PREVIOUS_YEAR};
-          targets are set by District Governors for {GOALS_YEAR} at the goal-setting event.{' '}
-          {scored
-            ? `Attainment is showing for ${scored} of the ${rows.length} district${rows.length === 1 ? '' : 's'} listed; the rest read as a dash until a target is set against a field they report.`
-            : 'None are scored yet, so Attainment is blank for every district.'}
+          Attainment sets what each district achieved in {PREVIOUS_YEAR} against its {GOALS_YEAR}{' '}
+          target, and <strong>those targets are provisional</strong> — the district's own reported
+          figure with a growth uplift, worked out for the demonstration rather than supplied by the
+          client. The portal seeds none, because District Governors set theirs at the goal-setting
+          event; a target typed on a Goals screen is the real one and replaces the provisional
+          figure for that field.{' '}
+          {`${scored} of the ${rows.length} district${rows.length === 1 ? '' : 's'} listed ${scored === 1 ? 'is' : 'are'} scored, and `}
+          {entered
+            ? `${entered} real target${entered === 1 ? ' has' : 's have'} been entered so far.`
+            : 'no real target has been entered yet.'}
         </DataNote>
         <DataNote tone="slate">
           Coverage is how many of the {REPORT_FIELDS.length} fields on the monthly report the portal
           carries for a district. Only {SOURCED_FIELDS} of them are collected there at all, and
-          Public Image is not among them.
+          Public Image is not among them — a field with nothing reported gets no target either, so
+          it counts towards neither column.
         </DataNote>
       </div>
     </>

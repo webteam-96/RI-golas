@@ -1,7 +1,7 @@
-import { useState, useSyncExternalStore } from 'react'
+import { useState } from 'react'
 import { MessageSquare, RotateCcw, Save } from 'lucide-react'
 import { useGoals } from '@/context/GoalsProvider'
-import { setTarget, targetIn, subscribe, getTargets } from '@/data/dishaTargets'
+import { setTarget, targetIn, useTargets } from '@/data/dishaTargets'
 import { GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
 import { DATA_AS_OF } from '@/data/zone6'
 import { percentAchieved, STATUS_META } from '@/lib/rollup'
@@ -46,7 +46,7 @@ export default function GoalTable({ scope, scopeId, metrics, editable = true }) 
   // Redraw whenever a target is set anywhere. The snapshot object identity changes on every
   // write, so overwriting an existing target refreshes too — a count would not, and the row
   // beside the input would sit on the figure typed by the first keystroke.
-  useSyncExternalStore(subscribe, getTargets, getTargets)
+  useTargets()
 
   const targetScope = `${scope}-metric`
   const targetOf = (metricId) => targetIn(targetScope, scopeId, metricId)
@@ -84,9 +84,12 @@ export default function GoalTable({ scope, scopeId, metrics, editable = true }) 
   return (
     <Card
       title="Goals"
+      // These are workbook metrics, not the monthly report's fields, and they carry no provisional
+      // layer — a target here is blank until it is typed. Said outright so the wording used on the
+      // district and club screens is not read across to this one.
       sub={`${metrics.length} metrics · ${
-        withTargets ? `${withTargets} with a target set for ${GOALS_YEAR}` : `no targets set yet for ${GOALS_YEAR}`
-      } · achieved is the workbook figure as at ${DATA_AS_OF}, within ${PREVIOUS_YEAR}`}
+        withTargets ? `${withTargets} with a target entered for ${GOALS_YEAR}` : `none entered yet for ${GOALS_YEAR}`
+      } · a target here is blank until it is typed, and none are provisional · achieved is the workbook figure as at ${DATA_AS_OF}, within ${PREVIOUS_YEAR}`}
       right={
         editable && (
           <div className="flex gap-2">

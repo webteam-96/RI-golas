@@ -10,6 +10,9 @@ import { AREA_METRIC_IDS, AREA_LEAD, areaLead } from '../data/headline.js'
 import { ZONE, DISTRICTS } from '../data/zone6.js'
 import { actualFor, coordinatorTotal, clubsIn, achievement } from './rollup.js'
 import { areaMetricsFor, areaLeadFor } from '../data/headline.js'
+import { DISHA_DISTRICTS } from '../data/disha.js'
+import { REPORT_FIELDS, achievedFor, UNSOURCED_FIELDS } from '../data/reportFields.js'
+import { getTargets, anyTargetsSet, targetValue, enteredTarget } from '../data/dishaTargets.js'
 
 let n = 0
 const check = (name, fn) => { fn(); n++; console.log('  ok  ' + name) }
@@ -116,10 +119,10 @@ check('each area lead and column metric resolves to a real metric', () => {
   assert.deepEqual(Object.keys(AREA_LEAD).sort(), AREAS.map((a) => a.id).sort())
 })
 
-// The source carries no targets — District Governors set them live at the goal-setting event —
-// so the goals store starts empty and every level must read as unscored rather than inventing
-// a bar to measure against. These two checks are the guarantee the old seed used to break.
-check('with no targets entered, nothing is scored at any level', () => {
+// A goal with no target at all is left unscored rather than assumed met. This is the four-area
+// `/zone/goals` path, where a metric with no target has nothing to measure against — inventing a
+// bar there would score a district on a number nobody set.
+check('a goal with no target is left unscored, never counted as met', () => {
   const score = (scope, id) => {
     const ms = AREAS.flatMap((a) => areaMetricsFor(scope, a.id))
     return achievement(ms.map((m) => ({
@@ -139,10 +142,27 @@ check('with no targets entered, nothing is scored at any level', () => {
   }
 })
 
-check('no module ships a seeded target set', () => {
+// No target is SEEDED anywhere — the portal supplies none, so no module may ship a stored set.
+// The second figure the report screens show is derived on demand from a figure the district
+// actually reported, which is a different thing and must stay one: nothing to import, nothing to
+// stale, and it disappears the moment the reported figure does.
+check('no module ships a seeded target set — provisional ones are derived on demand', () => {
   assert.ok(!existsSync(new URL('../data/seedTargets.js', import.meta.url)), 'seedTargets.js is back')
   const seeded = Object.keys(metrics).filter((k) => /^SEED|TARGET/.test(k))
   assert.deepEqual(seeded, [], `metrics.js exports target values: ${seeded}`)
+
+  // The entered store is empty at import: nothing was seeded into it.
+  assert.deepEqual(getTargets(), {})
+  assert.equal(anyTargetsSet(), false)
+
+  const d = DISHA_DISTRICTS.find((x) => achievedFor(REPORT_FIELDS.find((f) => f.id === 'membersStart'), x) != null)
+  assert.ok(d, 'expected at least one district with a reported membership figure')
+  assert.equal(enteredTarget('district', d.id, 'membersStart'), null, 'a target was seeded into the store')
+  assert.ok(targetValue(d.id, 'membersStart') > 0, 'a reported figure must yield a provisional target')
+
+  // Derived, not invented: a field the portal does not carry has nothing to derive from.
+  for (const f of UNSOURCED_FIELDS)
+    assert.equal(targetValue(d.id, f.id), null, `${f.id} produced a target with no figure behind it`)
 })
 
 check('every area lead resolves at the scope it is used in', () => {

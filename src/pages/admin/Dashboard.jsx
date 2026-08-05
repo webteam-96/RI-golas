@@ -7,7 +7,7 @@ import {
   REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor,
   SOURCED_FIELDS, UNSOURCED_FIELDS,
 } from '@/data/reportFields'
-import { targetValue, useTargetCount } from '@/data/dishaTargets'
+import { targetValue, useTargetCount, enteredCountIn } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Kpi, Card, Bar, DataNote } from '@/components/Bits'
 import WheelGauge from '@/components/WheelGauge'
@@ -18,18 +18,14 @@ const AREA_COLOR = {
   projects: '#009739', newgen: '#0891B2',
 }
 
-// The four figures the Director sees first. All four are reported for every district, so the
-// page still says something before a single goal exists.
+// The four figures the Director sees first. All four are reported for every district, so these
+// four tiles are the page's one section that owes nothing to a target, provisional or entered.
 const HEADLINE = [
   { id: 'membersStart', tone: 'royal' },
   { id: 'clubsStart',   tone: 'royal' },
   { id: 'totalGiving',  tone: 'gold' },
   { id: 'rotaractors',  tone: 'green' },
 ]
-
-// What each area leads with while there is nothing to attain against. Public Image and Projects
-// are absent because the portal carries no column for either — there is nothing to put there.
-const AREA_LEAD = { membership: 'membersStart', foundation: 'totalGiving', newgen: 'rotaractors' }
 
 /** A reported figure summed across districts. Blanks are skipped rather than read as zero, so a
  *  set with nothing on file sums to null. */
@@ -76,16 +72,14 @@ function coordinatorTotals(numbers) {
 export default function AdminDashboard() {
   const [zoneId, setZoneId] = useState(null)
   // Targets are entered live during the event, so the page follows the store rather than a load.
-  // The count itself is never shown: it spans every scope, including clubs and zone metrics that
-  // nothing on this page scores. What the page says, it says from `overall` below.
+  // Its own return is ignored: it spans every scope, clubs and zone metrics included, so the
+  // count below is summed per district instead and counts only what a governor actually typed.
   useTargetCount()
   const districts = zoneId ? districtsIn(zoneId) : DISHA_DISTRICTS
+  const entered = districts.reduce((n, d) => n + enteredCountIn('district', d.id), 0)
 
   const overall = attain(REPORT_FIELDS, districts)
-  const byArea = REPORT_CATEGORIES.map((c) => {
-    const s = attain(fieldsInCategory(c.id), districts)
-    return { c, s, lead: !s && AREA_LEAD[c.id] ? liveTotal(AREA_LEAD[c.id], districts) : null }
-  })
+  const byArea = REPORT_CATEGORIES.map((c) => ({ c, s: attain(fieldsInCategory(c.id), districts) }))
 
   const coordinators = [
     { ...ZONE.rrfc, lead: true, supports: ZONE6.map((d) => d.number) },
@@ -97,7 +91,7 @@ export default function AdminDashboard() {
       <LevelBanner
         eyebrow={`RI Director Office · monthly coordinator report · ${GOALS_YEAR}`}
         title="Goal Progress"
-        sub={`${DISHA_ZONES.map((z) => z.name).join(' & ')} · ${DISHA_DISTRICTS.length} districts · what they achieved in ${PREVIOUS_YEAR}, against the targets governors set for ${GOALS_YEAR}`}
+        sub={`${DISHA_ZONES.map((z) => z.name).join(' & ')} · ${DISHA_DISTRICTS.length} districts · what they achieved in ${PREVIOUS_YEAR}, against provisional targets for ${GOALS_YEAR}`}
       />
 
       {/* Reported figures lead: they are on file whether or not a goal has been set against them */}
@@ -127,32 +121,33 @@ export default function AdminDashboard() {
                 <p className="text-[13px] text-slate-500 mt-1">
                   {overall.scored} field-district pair{overall.scored === 1 ? '' : 's'} scored
                 </p>
+                {/* This is the number a viewer quotes back at you, so what it is measured
+                    against is said right beside it rather than only in the note below. */}
                 <p className="text-[11px] text-slate-400 mt-2.5 max-w-sm leading-relaxed">
-                  Each pair is capped at 100% before averaging, so one district far past its target
-                  cannot mask the ones falling short.
+                  Measured against <strong className="font-semibold">provisional</strong> targets —
+                  each district's own {PREVIOUS_YEAR} figure with a growth uplift, not figures
+                  supplied by the client. Each pair is capped at 100% before averaging, so one
+                  district far past its target cannot mask the ones falling short.
                 </p>
               </div>
             </div>
           ) : (
-            // A wheel at zero would read as every district having achieved nothing. Nothing has
-            // been aimed at yet, which is a different thing and worth saying in words.
+            // Only reached if not one district in view reports a figure: with nothing reported
+            // there is nothing to measure and nothing to work a target from. A wheel at zero
+            // would read as every district having achieved nothing, which is a different thing.
             <div className="max-w-sm">
-              <p className="eyebrow text-slate-400">Goal setting</p>
+              <p className="eyebrow text-slate-400">Attainment against target</p>
               <p className="font-display text-2xl font-bold text-ink leading-tight mt-1.5">
-                No goals set yet
+                Nothing to score
               </p>
               <p className="text-[13px] text-slate-500 mt-1">
-                {districts.length} districts reporting their figures
-              </p>
-              <p className="text-[11px] text-slate-400 mt-2.5 leading-relaxed">
-                District Governors set their targets at the goal-setting event. The wheel and the
-                attainment figures fill in as those targets are entered.
+                {districts.length} districts, none of them reporting a figure
               </p>
             </div>
           )}
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 lg:border-l lg:border-slate-100 lg:pl-8">
-            {byArea.map(({ c, s, lead }) => (
+            {byArea.map(({ c, s }) => (
               <div key={c.id}>
                 <div className="flex items-baseline justify-between mb-2">
                   <span className="flex items-center gap-2 text-[12px] font-semibold text-slate-600">
@@ -160,14 +155,14 @@ export default function AdminDashboard() {
                     {c.label}
                   </span>
                   <span className="font-data text-[13px] font-semibold text-ink">
-                    {s ? `${s.pct.toFixed(0)}%` : lead ? liveText(lead) : <span className="text-slate-300">—</span>}
+                    {s ? `${s.pct.toFixed(0)}%` : <span className="text-slate-300">—</span>}
                   </span>
                 </div>
                 {s && <Bar value={s.pct} max={100} color={AREA_COLOR[c.id]} height="h-2" />}
+                {/* Public Image and Projects are the two areas the portal carries no column for.
+                    With nothing reported there is no target either, so they stay dashed. */}
                 <p className="text-[10px] text-slate-400 mt-1.5">
-                  {s ? `${s.scored} scored`
-                     : lead ? `${lead.label} · ${PREVIOUS_YEAR}`
-                     : 'not collected in the portal'}
+                  {s ? `${s.scored} scored` : 'not collected in the portal'}
                 </p>
               </div>
             ))}
@@ -200,22 +195,23 @@ export default function AdminDashboard() {
         <DataNote>
           {/* Keyed on `overall`, the same figure the wheel above is keyed on, so the two cannot
               contradict each other on screen. */}
-          {!overall ? (
-            <><strong>Nothing is scored against a {GOALS_YEAR} target yet</strong> — District
-            Governors set the targets at the goal-setting event. Attainment, progress bars and
-            rankings appear as those targets are entered against the {PREVIOUS_YEAR} figures
-            above.</>
-          ) : (
-            <>Attainment sets the {PREVIOUS_YEAR} figures against the {overall.scored}{' '}
-            field-district pair{overall.scored === 1 ? '' : 's'} that carry a {GOALS_YEAR} target.
-            A field with no target is left out of the averages rather than counted as missed.</>
-          )}
+          <strong>The {GOALS_YEAR} targets on this page are provisional.</strong> The portal seeds
+          none — District Governors set theirs at the goal-setting event — so each one here is that
+          district's own reported {PREVIOUS_YEAR} figure with a growth uplift, worked out for the
+          demonstration rather than supplied by the client. A target typed on a Goals screen is the
+          real one and replaces the provisional figure for that field;{' '}
+          {entered
+            ? `${entered} ${entered === 1 ? 'has' : 'have'} been entered so far`
+            : 'none have been entered yet'} across the {districts.length} districts in view.
+          {overall && <> Attainment averages the {overall.scored} field-district
+          pair{overall.scored === 1 ? '' : 's'} that carry both figures.</>}
         </DataNote>
         <DataNote tone="slate">
           Fields come from the Zone 6 monthly coordinator report. The Zone 5 &amp; 6 portal carries
           reported figures for {SOURCED_FIELDS} of the {REPORT_FIELDS.length}; the
           other {UNSOURCED_FIELDS.length}, including all four Public Image fields, are not
-          collected in the portal and show as a dash.
+          collected in the portal. With nothing reported there is nothing to work a target from
+          either, so those rows show a dash on both sides and are left out of every average.
         </DataNote>
       </div>
     </>
@@ -243,8 +239,10 @@ function CoordinatorsCard({ coordinators, scored }) {
               <th className="text-left font-medium pb-2.5 pl-5">Coordinator</th>
               <th className="text-left font-medium pb-2.5 px-3">Role</th>
               <th className="text-left font-medium pb-2.5 px-3">Districts supported</th>
-              {/* Attainment needs goals. Until they exist the column carries a figure that is real. */}
-              <th className="text-left font-medium pb-2.5 px-3 w-44">{scored ? 'Attainment' : 'Members'}</th>
+              <th className="text-left font-medium pb-2.5 px-3 w-44">
+                Attainment
+                <span className="block tracking-normal text-slate-300 normal-case">vs provisional target</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -282,10 +280,10 @@ function CoordinatorsCard({ coordinators, scored }) {
         </table>
       </div>
       <p className="text-[11px] text-slate-400 mt-3 leading-relaxed">
-        {scored
-          ? 'Attainment is the mean of the districts a coordinator supports, each counted once — goals are set per district and a coordinator answers for each equally.'
-          : `Attainment appears here once goals are set; the column meanwhile carries the members those districts reported for ${PREVIOUS_YEAR}.`}
-        {' '}D{ZONE.rrfc.homeDistrict} sits under both the RRFC and ARRFC Jhunjhunuwala; zone
+        {/* The "once goals are set" branch is gone: every district reports something, so every
+            district scores against its provisional target and the branch was unreachable. */}
+        Attainment is the mean of the districts a coordinator supports, each counted once — goals
+        are set per district and a coordinator answers for each equally.{' '}D{ZONE.rrfc.homeDistrict} sits under both the RRFC and ARRFC Jhunjhunuwala; zone
         totals elsewhere still count it once.
       </p>
     </Card>

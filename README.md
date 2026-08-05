@@ -15,6 +15,10 @@ npm run dev      # http://localhost:5173
 npm run build
 ```
 
+Type is **Inter** for headings and body and **JetBrains Mono** for every figure, bundled locally
+through `@fontsource` — replacing Zilla Slab + Open Sans + IBM Plex Mono. Nothing is fetched at
+runtime, so the deck renders identically on a hall projector with no network.
+
 ## What it does
 
 | Route | Screen |
@@ -34,10 +38,19 @@ A role switcher in the top bar moves between the four levels. It is a demo affor
 
 `src/data/disha.js` carries the DISHA Zone 5 & 6 portal seed: **506 previous-year (2025-26) cells**
 across all **23 districts** of both zones, covering **14 of the 27 fields** on the monthly
-coordinator report. It seeds **no targets at all** — governors set those at the goal-setting event,
-for **2026-27** — and it holds **no Public Image data**, so those four rows are dashes at district
+coordinator report. It holds **no Public Image data**, so those four rows are dashes at district
 level. `PREVIOUS_YEAR` and `GOALS_YEAR` are exported from that file; screens interpolate them
 rather than hardcoding a year.
+
+**Targets are provisional.** The portal seeds none — its `goals` table holds a single test row,
+every Target column in both consolidated workbooks is blank, and the live MySQL database carries
+**1 goal row out of a possible 1,748** — because District Governors set theirs at the goal-setting
+event. So the target beside each achieved figure is worked out in `src/data/dishaTargets.js` from
+that district's or club's *own* 2025-26 reported number plus a growth uplift. It is not client
+data, and every screen says so. A target typed on a Goals screen is real and replaces the
+provisional one for that field. The thirteen unsourced fields have no reported figure to grow
+from, so they stay blank on both sides. Replacing the provisional layer wholesale with the
+client's real 2026-27 targets is a change to `src/data/dishaTargets.js` and nothing else.
 
 `src/data/clubs.js` is a separate source, the AG-module datasets rather than the portal: 42 clubs
 for D3120 and 4 for D3030. Those 4 D3030 clubs do carry Public Image figures, so club-level Public
@@ -84,8 +97,9 @@ Three rules the engine enforces, each with a test:
   and are footnoted wherever they appear. Needs confirming with the source.
 - District region labels are placeholders for orientation. Confirm against the RI directory before
   showing this outside the room.
-- **No targets are seeded anywhere.** Governors enter them at the goal-setting event, so every
-  target field starts blank and nothing is scored until one is entered.
+- **No real targets exist yet.** Governors enter them at the goal-setting event. Until then the
+  target in each cell is a provisional figure derived from that district's or club's own 2025-26
+  number — captioned as provisional wherever it appears, and never to be read as a client target.
 - The portal carries no Public Image column, so all four of those fields are blank for all 23
   districts. Only the 4 D3030 clubs have figures, and they come from the club dataset.
 

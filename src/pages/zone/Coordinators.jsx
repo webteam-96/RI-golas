@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ZONE, ARRFC_ROLE_LONG, signedInCoordinator } from '@/data/zone6'
 import { DISHA_DISTRICTS, GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor, SOURCED_FIELDS } from '@/data/reportFields'
-import { targetValue, useTargetCount } from '@/data/dishaTargets'
+import { targetValue, enteredCountIn, useTargetCount } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Kpi, Card, Bar, DataNote } from '@/components/Bits'
 import GoalMatrix from '@/components/GoalMatrix'
@@ -16,9 +16,11 @@ const LEAD = {
 const leadField = (catId) => REPORT_FIELDS.find((f) => f.id === LEAD[catId])
 
 /**
- * Mean attainment over one district's fields, each held between 0 and 100. Null until targets
- * are entered — with nothing to divide by there is no percentage to show. The floor matters as
- * much as the cap: a field that fell backwards is 0% attained, not a negative percentage.
+ * Mean attainment over one district's fields, each held between 0 and 100. Every field the portal
+ * carries has a target again — the one a governor entered, or a provisional figure grown from the
+ * district's own reported figure — so this scores; it is null only for a district that reports
+ * nothing at all. The floor matters as much as the cap: a field that fell backwards is 0%
+ * attained, not a negative percentage.
  */
 function districtPct(d) {
   const p = []
@@ -36,9 +38,13 @@ function districtPct(d) {
  */
 export default function ZoneCoordinators() {
   const c = signedInCoordinator()
-  useTargetCount() // targets are entered elsewhere; re-render when they are. The count it returns
-                   // is every scope's, not this coordinator's, so the note below uses `scores`.
+  useTargetCount() // targets are entered elsewhere; re-render when they are
   const districts = c.supports.map(byNumber).filter(Boolean)
+
+  // Counted with enteredCountIn, not targetValue: nearly every populated cell now carries a
+  // provisional target, so counting those would claim a couple of dozen targets "entered" when a
+  // governor has typed none.
+  const entered = districts.reduce((n, d) => n + enteredCountIn('district', d.id), 0)
 
   const scores = districts.map(districtPct).filter((v) => v != null)
   const attainment = scores.length ? scores.reduce((s, v) => s + v, 0) / scores.length : null
@@ -87,9 +93,9 @@ export default function ZoneCoordinators() {
                 </span>
                 <span className="flex-1 min-w-0 text-[12px] text-slate-500 truncate">{d.governor ?? '—'}</span>
                 <span className="w-40">
-                  {/* No target, no bar — a rail at zero width reads as a district on nothing */}
+                  {/* Nothing reported, no bar — a rail at zero width reads as a district on nothing */}
                   {pct == null
-                    ? <span className="text-[11px] text-slate-400">no target set</span>
+                    ? <span className="text-[11px] text-slate-400">nothing reported</span>
                     : <Bar value={pct} max={100} />}
                 </span>
                 <span className="w-12 text-right font-data text-[12px] font-semibold text-ink">
@@ -101,11 +107,12 @@ export default function ZoneCoordinators() {
         </div>
         <p className="text-[11px] text-slate-400 mt-3">
           {attainment == null ? (
-            'Attainment is shown once targets are set against these districts.'
+            'No district here has a reported figure to score.'
           ) : (
             <>
               Mean across {scores.length} district{scores.length > 1 ? 's' : ''}:{' '}
-              <strong className="text-slate-600">{attainment.toFixed(1)}%</strong>
+              <strong className="text-slate-600">{attainment.toFixed(1)}%</strong>, against
+              provisional targets.
             </>
           )}
         </p>
@@ -119,16 +126,18 @@ export default function ZoneCoordinators() {
         target={(f, e) => targetValue(e.id, f.id)}
         format={dishaNumber}
         title="My districts"
-        sub={`${districts.length} supported · achieved ${PREVIOUS_YEAR}, targets for ${GOALS_YEAR} once set`}
+        sub={`${districts.length} supported · achieved ${PREVIOUS_YEAR}, provisional targets for ${GOALS_YEAR}`}
       />
 
       <div className="mt-5 space-y-2">
         <DataNote>
-          The figures here are what these districts achieved in {PREVIOUS_YEAR}; targets are set by
-          District Governors for {GOALS_YEAR} at the goal-setting event.{' '}
-          {scores.length
-            ? `Attainment is showing for ${scores.length} of the ${districts.length} districts here; the rest read as a dash.`
-            : 'None are scored yet, so every attainment figure reads as a dash.'}
+          The figures here are what these districts achieved in {PREVIOUS_YEAR}. The{' '}
+          <strong>targets are provisional</strong>: each is worked out from that district&apos;s own{' '}
+          {PREVIOUS_YEAR} figure, not supplied by the client and not held in the portal, which seeds
+          none because District Governors set their {GOALS_YEAR} targets at the goal-setting event.
+          A target typed on a Goals screen is the real one and replaces the provisional figure for
+          that field{entered ? ` — ${entered} entered so far against these districts` : ''}. Every
+          attainment percentage above is measured against those targets.
         </DataNote>
         <DataNote tone="slate">
           This is {c.name}&apos;s view — the {districts.length} districts they support. The full Zone{' '}

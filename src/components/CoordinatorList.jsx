@@ -4,7 +4,7 @@ import { ChevronRight, ChevronDown, Star } from 'lucide-react'
 import { ZONE, ARRFC_ROLE_LONG } from '@/data/zone6'
 import { DISHA_DISTRICTS, districtsIn, PREVIOUS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES, REPORT_FIELDS, SOURCED_FIELDS, fieldsInCategory, achievedFor } from '@/data/reportFields'
-import { targetValue, useTargetCount } from '@/data/dishaTargets'
+import { targetValue, enteredCountIn, useTargetCount } from '@/data/dishaTargets'
 import { dishaNumber } from '@/lib/disha'
 import { DataNote } from './Bits'
 import GoalMatrix from './GoalMatrix'
@@ -22,10 +22,11 @@ const LEAD = {
 }
 const leadField = (catId) => REPORT_FIELDS.find((f) => f.id === LEAD[catId])
 
-/** Targets set against a given set of districts. The store's own count spans every scope —
- *  clubs and zone metrics included — and no card here scores any of those. */
-const targetsOver = (districts) =>
-  districts.reduce((n, d) => n + REPORT_FIELDS.filter((f) => targetValue(d.id, f.id)).length, 0)
+/** Targets ENTERED against a given set of districts — counted through enteredCountIn, not
+ *  targetValue, which now also answers with a provisional figure for nearly every populated cell
+ *  and would report a hundred-odd targets "entered" when a governor has typed none. */
+const enteredOver = (districts) =>
+  districts.reduce((n, d) => n + enteredCountIn('district', d.id), 0)
 
 const sumOver = (field, districts) => {
   let s = null
@@ -43,8 +44,8 @@ const sumOver = (field, districts) => {
  */
 export default function CoordinatorList() {
   const [open, setOpen] = useState(ZONE.coordinators[0].id)
-  useTargetCount()                      // re-render on entry; the numbers shown come from the zone
-  const targetsSet = targetsOver(ZONE6) // every card is a subset of the zone, so this covers them all
+  useTargetCount()                     // re-render on entry; the numbers shown come from the zone
+  const entered = enteredOver(ZONE6)   // every card is a subset of the zone, so this covers them all
 
   const assigned = new Set(ZONE.coordinators.flatMap((c) => c.supports))
   const unassigned = ZONE6.filter((d) => !assigned.has(d.number))
@@ -145,7 +146,7 @@ export default function CoordinatorList() {
                     target={(f, e) => targetValue(e.id, f.id)}
                     format={dishaNumber}
                     title={`${c.name} — districts`}
-                    sub={`${districts.length} supported · ${targetsOver(districts) ? 'achieved over target where one is set' : 'figures on file, no targets set for these districts yet'}`}
+                    sub={`${districts.length} supported · ${PREVIOUS_YEAR} figures over provisional targets`}
                   />
                 </div>
               )}
@@ -167,12 +168,16 @@ export default function CoordinatorList() {
         <DataNote tone="slate">
           {/* The banner above ends on the goal year and no card carries a year of its own, so the
               five figures on each would otherwise be read as goal-year money. They are last year's. */}
-          The five figures on each card are what those districts reported for {PREVIOUS_YEAR}.{' '}
-          {targetsSet === 0
-            ? 'District Governors set their targets at the goal-setting event, and none are set against these districts yet, so nothing on a card is progress towards a goal. '
-            : `${targetsSet} target${targetsSet === 1 ? ' has' : 's have'} been entered against these districts so far; the rest are still to be set at the goal-setting event. `}
-          The portal carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on this report, and no
-          Public Image data at all, so Public Image and Projects read as a dash on every card.
+          The five figures on each card are what those districts reported for {PREVIOUS_YEAR}, so
+          nothing on a card is itself progress towards a goal. The targets in the tables below
+          them are <strong>provisional</strong>: each is worked out from that district&apos;s own{' '}
+          {PREVIOUS_YEAR} figure, not supplied by the client and not held in the portal, which
+          seeds none because District Governors set their targets at the goal-setting event. A
+          target typed on a Goals screen is the real one and replaces the provisional figure for
+          that field{entered ? ` — ${entered} entered across the zone so far` : ''}. The portal
+          carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} fields on this report, and no
+          Public Image data at all, so Public Image and Projects read as a dash on every card and
+          carry no target either.
         </DataNote>
         <DataNote tone="slate">
           Zone totals sum the {ZONE6.length} districts directly, never through the coordinator rows —

@@ -59,9 +59,6 @@ export default function MonthlyReport() {
     }
     return s
   }
-  // Whether THIS report has a target to show — the store's global count also counts club and
-  // zone-metric targets, which would hide the note below while every column here stayed blank.
-  const anyTarget = REPORT_FIELDS.some((f) => targetOver(f) != null)
 
   return (
     <>
@@ -83,9 +80,14 @@ export default function MonthlyReport() {
         <DataNote>
           The portal carries {SOURCED_FIELDS} of the {REPORT_FIELDS.length} rows on this form, and those
           arrive filled from the reported figures. The other {REPORT_FIELDS.length - SOURCED_FIELDS},
-          including all of Public Image, are not collected in the portal and stay blank. The figures are
-          each district's reported position for {PREVIOUS_YEAR}, the baseline the {GOALS_YEAR} targets are
-          set against. The coordinator reviews the numbers and writes the closing sections.
+          including all of Public Image, are not collected in the portal and stay blank on both sides.
+          The figures are each district&apos;s reported position for {PREVIOUS_YEAR}. The{' '}
+          <strong>Target {GOALS_YEAR} column is provisional</strong>: each figure is grown from those
+          same reported figures, not supplied by the client and not held in the portal, which seeds no
+          targets because District Governors set them at the goal-setting event. A target typed on a
+          Goals screen is the real one and replaces the provisional figure for that field, here and
+          everywhere else it appears. The coordinator reviews the numbers and writes the closing
+          sections.
         </DataNote>
       </div>
 
@@ -165,13 +167,6 @@ export default function MonthlyReport() {
         {/* Not "vs. Zone Target": both columns sum the districts this coordinator covers, which
             for ARRFC Konwar is one district. It is only the zone total when the RRFC is selected. */}
         <Section n={REPORT_CATEGORIES.length + 2} title="Goal Progress vs. Target" auto>
-          {!anyTarget && (
-            <p className="text-[11px] text-slate-400 mb-3">
-              District Governors set their targets at the goal-setting event and none are set yet for the
-              districts covered here, so the target, percentage and judgement columns stay blank. The{' '}
-              {PREVIOUS_YEAR} figures are filled in either way.
-            </p>
-          )}
           <div className="overflow-x-auto">
             <table className="w-full text-[13px] min-w-[640px]">
               <thead>
@@ -179,7 +174,9 @@ export default function MonthlyReport() {
                   <th className="text-left font-medium pb-2">Goal area</th>
                   <th className="text-right font-medium pb-2 px-3">
                     Target {GOALS_YEAR}
-                    <span className="block tracking-normal text-slate-300">districts covered</span>
+                    {/* This form is exported to PDF and read away from the page, so the column
+                        says what it is rather than relying on the note above travelling with it. */}
+                    <span className="block tracking-normal text-slate-300">provisional · districts covered</span>
                   </th>
                   <th className="text-right font-medium pb-2 px-3">Achieved {PREVIOUS_YEAR}</th>
                   {/* Not "% achieved" and not "on track": both read as progress made inside the

@@ -7,10 +7,12 @@ export default {
   ],
   theme: {
     extend: {
+      // One face throughout. The slab-serif display font read dated beside the data, and mixing
+      // a serif headline with a humanist body gave the pages two different voices.
       fontFamily: {
-        display: ['Zilla Slab', 'Georgia', 'serif'],
-        sans: ['Open Sans', 'system-ui', 'sans-serif'],
-        data: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
+        display: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        data: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       colors: {
         // Rotary's own palette — primary is mandated, the secondaries are the official

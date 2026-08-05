@@ -1,15 +1,14 @@
-import { useSyncExternalStore } from 'react'
 import { ZONE, DATA_AS_OF } from '@/data/zone6'
 import { FOUNDATION } from '@/data/metrics'
 import { GOALS_YEAR, PREVIOUS_YEAR } from '@/data/disha'
-import { subscribe, getTargets, targetIn } from '@/data/dishaTargets'
+import { useTargets, targetIn } from '@/data/dishaTargets'
 import { LevelBanner, DataNote } from '@/components/Bits'
 import GoalTable from '@/components/GoalTable'
 
 export default function ZoneGoals() {
   // Re-render on every write, not only on the first: the count below has to move as targets
   // are entered, and the snapshot identity changes where a key count would not.
-  useSyncExternalStore(subscribe, getTargets, getTargets)
+  useTargets()
 
   // This page's own targets. The global store also holds district and club ones, entered on
   // other screens and scored nowhere on this page, so the store-wide count would overstate it.
@@ -33,9 +32,12 @@ export default function ZoneGoals() {
           <strong>Achieved</strong> is what the nine Zone 6 districts had reported in the Foundation
           goals workbook as at {DATA_AS_OF} — part-way through {PREVIOUS_YEAR}, and the baseline a
           target is set against rather than progress within {GOALS_YEAR}. <strong>Target</strong> is
-          the zone&apos;s own figure for {GOALS_YEAR}. District targets are set on each district&apos;s
-          goals page against the monthly report&apos;s fields, which are not these workbook metrics,
-          so they are not summed into this screen.
+          the zone&apos;s own figure for {GOALS_YEAR}: it is blank until it is typed here, and nothing
+          on this page is provisional — unlike the district and club goals screens, which show a
+          provisional target worked out from each one&apos;s own reported figure until the real one is
+          entered. District targets are set on each district&apos;s goals page against the monthly
+          report&apos;s fields, which are not these workbook metrics, so they are not summed into
+          this screen.
         </DataNote>
       </div>
 

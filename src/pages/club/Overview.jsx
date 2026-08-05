@@ -4,7 +4,7 @@ import { CLUBS } from '@/data/clubs'
 import { GOALS_YEAR } from '@/data/disha'
 import { REPORT_CATEGORIES } from '@/data/reportFields'
 import { CLUB_FIELDS, clubFieldsIn, clubCategories, clubAchieved, clubTarget } from '@/data/clubFigures'
-import { useTargetCount } from '@/data/dishaTargets'
+import { enteredCountIn, useTargetCount } from '@/data/dishaTargets'
 import { clubsIn } from '@/lib/rollup'
 import { dishaNumber } from '@/lib/disha'
 import { LevelBanner, Kpi, Card, Bar, DataNote } from '@/components/Bits'
@@ -26,8 +26,8 @@ export default function ClubOverview() {
   const cats = clubCategories(REPORT_CATEGORIES)
   const president = typeof club.president === 'string' ? club.president : club.president?.name
 
-  // Nothing is scored until a target exists, so both of these are empty until somebody
-  // enters one on the goals screen.
+  // A reported field now carries a provisional target, so most of these score. A field the club
+  // has not reported has neither half and is left out.
   const scored = CLUB_FIELDS
     .map((f) => ({ a: clubAchieved(f, club), t: clubTarget(club.id, f.id), f }))
     .filter((r) => r.a != null && r.t)
@@ -37,6 +37,7 @@ export default function ClubOverview() {
     ? scored.reduce((s, r) => s + Math.min(Math.max((r.a / r.t) * 100, 0), 100), 0) / scored.length
     : null
   const anyTarget = CLUB_FIELDS.some((f) => clubTarget(club.id, f.id) != null)
+  const entered = enteredCountIn('club', club.id) // real ones only — clubTarget also yields provisionals
 
   return (
     <>
@@ -74,8 +75,9 @@ export default function ClubOverview() {
         format={dishaNumber}
         title={club.name}
         // The figures on this page come from src/data/clubs.js, which states no reporting
-        // period, so neither line names one. Only the target year is sourced.
-        sub={`Achieved as last reported · ${anyTarget ? `target ${GOALS_YEAR}` : `no target set for ${GOALS_YEAR} yet`}`}
+        // period, so neither line names one. Only the target year is sourced. The provisional
+        // caveat is left to the note below rather than repeated in every caption.
+        sub={`Achieved as last reported · ${anyTarget ? `target ${GOALS_YEAR}` : `nothing reported, so no target for ${GOALS_YEAR}`}`}
         achievedLabel="Achieved as last reported by the club"
       />
 
@@ -112,20 +114,24 @@ export default function ClubOverview() {
       <div className="mt-5">
         <DataNote tone="slate">
           Achieved figures are what the club last reported — the club list carries no reporting
-          period, so none is claimed; targets are being set
-          for {GOALS_YEAR}. A club answers {CLUB_FIELDS.length} of the report&apos;s fields; the rest
-          are district-level and are not shown here.{' '}
+          period, so none is claimed. The <strong>{GOALS_YEAR} targets are provisional</strong>:
+          each is worked out from the club&apos;s own reported figure, not supplied by the client and
+          not held in the portal, which seeds none. A target entered on the Goals tab is the real one
+          and replaces the provisional figure for that field
+          {entered ? `, and ${entered} ${entered === 1 ? 'has' : 'have'} been entered` : ''}. A club
+          answers {CLUB_FIELDS.length} of the report&apos;s fields; the rest are district-level and
+          are not shown here.{' '}
           {/* A target can exist on a field the club has not reported, so attainment being null
-              is not the same as no target set — the two cases read differently. */}
+              is not the same as no target at all — the two cases read differently. */}
           {attainment != null ? (
-            <>Attainment across the {scored.length} goal{scored.length === 1 ? '' : 's'} with a
-            target set is{' '}
-            <strong>{attainment.toFixed(0)}%</strong>.</>
+            <>Attainment across the {scored.length} goal{scored.length === 1 ? '' : 's'} with both a
+            figure and a target is <strong>{attainment.toFixed(0)}%</strong>.</>
           ) : anyTarget ? (
             <>Attainment reads <strong>—</strong>: nothing has been reported against the targets
-            set so far.</>
+            on file.</>
           ) : (
-            <>Attainment reads <strong>—</strong>: no target has been set for this club yet.</>
+            <>Attainment reads <strong>—</strong>: the club has reported nothing, so there is no
+            target to measure against.</>
           )}
         </DataNote>
       </div>

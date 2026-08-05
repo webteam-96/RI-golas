@@ -6,7 +6,8 @@ import {
 } from '../data/disha.js'
 import { completion, coverage, sections, dishaNumber, totalFor, TARGET_FIELDS } from './disha.js'
 import {
-  targetValue, targetIn, setTarget, clearTargets, getTargets, anyTargetsSet, subscribe,
+  targetValue, targetIn, enteredTarget, isEntered, provisionalTarget, provisionalFrom,
+  setTarget, clearTargets, getTargets, anyTargetsSet, enteredCount, enteredCountIn, subscribe,
 } from '../data/dishaTargets.js'
 import {
   REPORT_CATEGORIES, REPORT_FIELDS, fieldsInCategory, achievedFor,
@@ -70,7 +71,7 @@ check('reference figures survived the port', () => {
   assert.equal(Object.keys(PREVIOUS).length, 23)
 })
 
-check('targets are unset — they are entered live at the event', () => {
+check('the 76-field goal form starts empty — nothing is pre-filled', () => {
   for (const d of DISHA_DISTRICTS) {
     const c = completion(d.id)
     assert.equal(c.filled, 0)
@@ -220,39 +221,104 @@ check('a sourced field reads its portal cell, and stays null where the cell is b
     'every sourced field is on file for every district')
 })
 
-console.log('\ntargets — entered at the event, none seeded')
+console.log('\ntargets — provisional until entered, none seeded')
 
-// The portal's `goals` table is created and never seeded, and every Target column in both
-// consolidated workbooks is blank. Nothing here may invent one.
-check('no district holds a target until one is entered', () => {
+/**
+ * The one rule every cell follows, district or club:
+ *   no figure           -> no target, so a blank row stays blank on BOTH sides
+ *   a figure of zero    -> a count targets its first one; money has nothing to scale from
+ *   fewer is better     -> the target sits at or below what happened, never above
+ *   anything else       -> a target above the figure it grew from
+ */
+const checkPair = (label, f, achieved, target) => {
+  if (achieved == null)
+    assert.equal(target, null, `${label}: no figure, yet a target of ${target}`)
+  else if (achieved === 0)
+    assert.equal(target, f.unit === 'nos' && !f.lowerIsBetter ? 1 : null, `${label}: at zero, target ${target}`)
+  else if (f.lowerIsBetter)
+    assert.ok(target <= achieved, `${label}: fewer is better, so ${target} must not be above ${achieved}`)
+  else
+    assert.ok(typeof target === 'number' && target > achieved, `${label}: achieved ${achieved}, target ${target}`)
+}
+
+// The portal's `goals` table holds a single test row, every Target column in both consolidated
+// workbooks is blank, and the live database has 1 goal of a possible 1,748 — District Governors
+// set theirs at the goal-setting event. So nothing is entered here, and what fills the second
+// figure in every cell until then is a provisional target derived from the district's own
+// 2025-26 number. Derived on demand, never stored, and never invented out of nothing.
+check('nothing is entered, yet every reported figure carries a provisional target', () => {
   assert.equal(anyTargetsSet(), false)
   assert.deepEqual(getTargets(), {})
+  assert.equal(enteredCount(), 0)
+
+  let pairs = 0
   for (const d of DISHA_DISTRICTS)
-    for (const f of REPORT_FIELDS)
-      assert.equal(targetValue(d.id, f.id), null, `${d.number} / ${f.id} came with a target`)
+    for (const f of REPORT_FIELDS) {
+      assert.equal(enteredTarget('district', d.id, f.id), null, `${d.number} / ${f.id} came with an entered target`)
+      assert.equal(targetIn('district', d.id, f.id), null)        // the older alias reads the same store
+      assert.equal(isEntered('district', d.id, f.id), false)
+
+      const achieved = achievedFor(f, d)
+      const target = targetValue(d.id, f.id)
+      checkPair(`${d.number} / ${f.id}`, f, achieved, target)
+      if (achieved != null && target != null) pairs++
+    }
+  assert.ok(pairs > 300, `only ${pairs} district cells carry both figures`)
+
+  // The thirteen rows the portal does not carry stay empty on the target side too — a
+  // provisional figure needs a reported one to grow from.
+  for (const f of UNSOURCED_FIELDS)
+    for (const d of DISHA_DISTRICTS)
+      assert.equal(targetValue(d.id, f.id), null, `${f.id} / ${d.number}: an unsourced row grew a target`)
+
+  // Direction and edge cases, pinned on the generator itself rather than on whichever district
+  // happens to sit at zero this month.
+  assert.deepEqual(REPORT_FIELDS.filter((f) => f.lowerIsBetter).map((f) => f.id), ['terminated', 'clubsClosed'])
+  for (const f of REPORT_FIELDS.filter((x) => x.lowerIsBetter)) {
+    assert.ok(provisionalFrom(20, f) < 20, `${f.id} does not aim below its achieved figure`)
+    for (const base of [1, 2, 3, 50]) assert.ok(provisionalFrom(base, f) <= base, `${f.id} at ${base} aimed higher`)
+    assert.equal(provisionalFrom(0, f), null, `${f.id} at zero has nothing left to cut`)
+  }
+  const byId = (id) => REPORT_FIELDS.find((f) => f.id === id)
+  assert.equal(provisionalFrom(0, byId('clubsChartered')), 1, 'a count at zero targets its first one')
+  assert.equal(provisionalFrom(0, byId('annualFund')), null, 'money at zero has nothing to scale from')
+  assert.equal(provisionalFrom(null, byId('membersStart')), null)
 })
 
-check('an entered target round-trips, stays in its own cell, and clears', () => {
+check('an entered target replaces the provisional one, and clearing it brings the provisional back', () => {
   const [a, b] = DISHA_DISTRICTS
+  const provisional = provisionalTarget(a.id, 'membersStart')
+  assert.ok(provisional > 0, 'the fixture district must carry a provisional target to displace')
+  assert.notEqual(provisional, 7777, 'the entered figure must differ from the provisional one to prove which won')
+
   let notified = 0
   const stop = subscribe(() => { notified++ })
 
-  setTarget('district', a.id, 'membersStart', 6800)
-  assert.equal(targetValue(a.id, 'membersStart'), 6800)
+  setTarget('district', a.id, 'membersStart', 7777)
+  assert.equal(targetValue(a.id, 'membersStart'), 7777, 'the entered figure must win')
+  assert.equal(isEntered('district', a.id, 'membersStart'), true)
+  assert.equal(enteredCountIn('district', a.id), 1)
   assert.equal(anyTargetsSet(), true)
   assert.equal(notified, 1, 'entry must wake the pages reading the store')
-  assert.equal(targetValue(b.id, 'membersStart'), null, 'a target leaked to another district')
-  assert.equal(targetValue(a.id, 'annualFund'), null, 'a target leaked to another field')
+
+  // Entry is per cell. Everything else still reads its provisional figure, and none of it counts
+  // as entered — that difference is what the pages caption.
+  assert.equal(enteredTarget('district', b.id, 'membersStart'), null, 'an entry leaked to another district')
+  assert.equal(enteredTarget('district', a.id, 'annualFund'), null, 'an entry leaked to another field')
+  assert.equal(targetValue(b.id, 'membersStart'), provisionalTarget(b.id, 'membersStart'))
+  assert.equal(targetValue(a.id, 'annualFund'), provisionalTarget(a.id, 'annualFund'))
   // Scoped, so club 3120-something cannot read district 3120's goal.
   assert.equal(targetIn('club', a.id, 'membersStart'), null)
 
   setTarget('district', a.id, 'membersStart', null)
-  assert.equal(targetValue(a.id, 'membersStart'), null, 'clearing one cell must remove it')
+  assert.equal(isEntered('district', a.id, 'membersStart'), false)
+  assert.equal(targetValue(a.id, 'membersStart'), provisional, 'clearing one cell falls back to provisional')
 
   setTarget('district', a.id, 'annualFund', 100000)
   clearTargets()
   assert.deepEqual(getTargets(), {})
   assert.equal(anyTargetsSet(), false)
+  assert.equal(targetValue(a.id, 'annualFund'), provisionalTarget(a.id, 'annualFund'))
   stop()
 })
 
@@ -276,7 +342,9 @@ check('every club category has at least one field, and empty ones are dropped', 
   for (const c of dropped) assert.equal(clubFieldsIn(c.id).length, 0)
 })
 
-check('club figures read the club record, and no club starts with a target', () => {
+// A club cell reads the same way as a district cell: nothing entered, a provisional figure grown
+// from the club's own reported number, and the entered one the moment a president types it.
+check('club figures read the club record, and follow the same two-source target rule', () => {
   const c = CLUBS.find((x) => x.id === '15766')          // Thane, from district3192
   const members = CLUB_FIELDS.find((f) => f.id === 'membersStart')
   assert.equal(clubAchieved(members, c), c.membership.current)
@@ -284,17 +352,23 @@ check('club figures read the club record, and no club starts with a target', () 
   let filled = 0
   for (const club of CLUBS)
     for (const f of CLUB_FIELDS) {
-      assert.equal(clubTarget(club.id, f.id), null, `${club.name} / ${f.id} came with a target`)
-      if (clubAchieved(f, club) != null) filled++
+      assert.equal(targetIn('club', club.id, f.id), null, `${club.name} / ${f.id} came with an entered target`)
+      const achieved = clubAchieved(f, club)
+      checkPair(`${club.name} / ${f.id}`, f, achieved, clubTarget(club.id, f.id))
+      if (achieved != null) filled++
     }
   assert.ok(filled > 200, `only ${filled} club figures read`)
 
   const other = CLUBS.find((x) => x.id !== c.id)
-  setTarget('club', c.id, 'membersStart', 60)
-  assert.equal(clubTarget(c.id, 'membersStart'), 60)
-  assert.equal(clubTarget(other.id, 'membersStart'), null, 'a target leaked to another club')
+  const provisional = clubTarget(c.id, 'membersStart')
+  const otherBefore = clubTarget(other.id, 'membersStart')
+  assert.ok(provisional > clubAchieved(members, c), 'a club with members must carry a provisional target')
+
+  setTarget('club', c.id, 'membersStart', 400)
+  assert.equal(clubTarget(c.id, 'membersStart'), 400, 'the entered figure must win')
+  assert.equal(clubTarget(other.id, 'membersStart'), otherBefore, 'an entry leaked to another club')
   clearTargets()
-  assert.equal(clubTarget(c.id, 'membersStart'), null)
+  assert.equal(clubTarget(c.id, 'membersStart'), provisional, 'clearing falls back to provisional')
 })
 
 console.log(`\n${n} checks passed\n`)

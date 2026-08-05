@@ -122,7 +122,7 @@ export default function ZoneDistricts() {
                                       <th className="text-right font-semibold pb-1.5 px-2">Net</th>
                                       <th className="text-right font-semibold pb-1.5 px-2">TRF (USD)</th>
                                       <th className="text-right font-semibold pb-1.5 px-2">Projects</th>
-                                      <th className="text-right font-semibold pb-1.5 px-2">Goals</th>
+                                      <th className="text-right font-semibold pb-1.5 px-2">Citation&nbsp;goals</th>
                                       <th className="w-6" />
                                     </tr>
                                   </thead>
@@ -189,7 +189,9 @@ export default function ZoneDistricts() {
           Club rosters are loaded for D3120 and D3030. The remaining seven districts show
           district-level Foundation figures with no club layer beneath them yet. The club rows come
           from the AG-module club dataset rather than the Foundation workbook, and that source
-          states no reporting period of its own.
+          states no reporting period of its own. The <strong>Citation goals</strong> column is each club's
+          Rotary Citation goal count from that same dataset — a different thing from the targets set
+          in this app, and not affected by them.
         </DataNote>
       </div>
     </>
