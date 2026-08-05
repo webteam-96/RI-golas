@@ -4,25 +4,13 @@ import { PREVIOUS_YEAR, GOALS_YEAR } from '@/data/disha'
 import { TARGETS_ARE_PROVISIONAL } from '@/data/dishaTargets'
 import { Card } from './Bits'
 
-const OK = '#009739', WARN = '#B85400', BAD = '#C8102E', PLAIN = '#1E293B', NONE = '#94A3B8'
+const OK = '#009739', WARN = '#B85400', BAD = '#C8102E', NONE = '#94A3B8'
 
-/**
- * Colour the achieved figure by where it stands, inverted for fields where less is better.
- *
- * The bands are deliberately not the ones you would use for progress inside a running year.
- * Achieved is last year's baseline and the target is a stretch for a year that has not started,
- * so sitting below the target is the ordinary, expected state — it is what a target IS. The
- * previous bands treated everything under 100% as a warning, which against a 7-25% uplift meant
- * 287 of 314 cells rendered amber and not one rendered green: the colour was the uplift constant,
- * drawn on screen, and it read as a zone failing across the board.
- *
- * Now a figure only takes colour when the colour means something — already at or past the target,
- * or so far short that the target is out of reach. Everything in between is plain ink.
- */
+/** Colour the achieved figure by where it stands, inverted for fields where less is better. */
 export const pctTone = (pct, lowerIsBetter) => {
   if (pct == null) return NONE
-  if (lowerIsBetter) return pct <= 100 ? OK : pct <= 150 ? PLAIN : WARN
-  return pct >= 100 ? OK : pct >= 60 ? PLAIN : WARN
+  if (lowerIsBetter) return pct <= 100 ? OK : pct <= 133 ? WARN : BAD
+  return pct >= 100 ? OK : pct >= 75 ? WARN : BAD
 }
 
 /**

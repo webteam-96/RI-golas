@@ -20,14 +20,10 @@ const load = () => {
 // scored like any other. "No target" now only reaches a row that genuinely has none — the handful
 // where the reported figure is a zero no uplift can grow, and the thirteen fields with no figure
 // to grow from at all (those show "No data", the achieved side being the missing half).
-//
-// The bands match pctTone's, and for the same reason: the target is a stretch for a year that has
-// not started, so being under it is the ordinary state rather than a warning. Bands tuned for
-// in-year progress put every single row on "On Track" or worse and never once on "Achieved".
 const statusOf = (pct, achievedValue, lowerIsBetter) => {
   if (pct == null) return achievedValue == null ? 'nodata' : 'notset'
-  if (lowerIsBetter) return pct <= 100 ? 'achieved' : pct <= 150 ? 'ontrack' : 'atrisk'
-  return pct >= 100 ? 'achieved' : pct >= 60 ? 'ontrack' : 'atrisk'
+  if (lowerIsBetter) return pct <= 100 ? 'achieved' : pct <= 133 ? 'atrisk' : 'behind'
+  return pct >= 100 ? 'achieved' : pct >= 75 ? 'ontrack' : pct >= 50 ? 'atrisk' : 'behind'
 }
 
 /**
